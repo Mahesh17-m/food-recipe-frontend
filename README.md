@@ -406,7 +406,7 @@ dist/food-recipe-frontend/
 /assets/screens/recipe-search.png
 
 ### 🤖 AI Cooking Assistant
-/assets/screens/ai-chatbot.png
+D:\FOODRECIPEAPP\public\assets\screens\ai-chatbot.png
 
 ### 👤 User Dashboard
 /assets/screens/user-dashboard.png
