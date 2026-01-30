@@ -705,19 +705,19 @@ $breakpoints: (
 ## 📸 Screenshots & Demo
 
 ### 🏠 Home Page
-![Home Page](\assets\screens\home-page.png)
+![Image](https://github.com/user-attachments/assets/ebd79e5e-3145-4958-a68b-78feb2aeb385)
 *Modern, responsive home page with featured recipes and search functionality*
 
 ### 🍳 Recipe Details
-![Recipe Details](\assets\screens\recipe-details.png)
+![Image](https://github.com/user-attachments/assets/2080bbf9-7892-4019-9652-d9b53e8678f4)
 *Interactive recipe page with ingredients, instructions, and cooking timer*
 
 ### 🔍 Recipes View Page
-![Recipe Search](.\assets\screens\recipe-search.png)
+<img width="561" height="651" alt="Image" src="https://github.com/user-attachments/assets/b3ccbb56-3211-4506-bd7e-7654eb365393" />
 *Advanced search with filters for categories, cooking time, and difficulty*
 
 ### 🤖 AI Cooking Assistant
-![AI Assistant](.\assets\screens\ai-chatbot.png)
+<img width="542" height="799" alt="Image" src="https://github.com/user-attachments/assets/543a3b7b-f5c7-4bf4-a7e2-7960c61cc0d5" />
 *Interactive AI chat for cooking tips and recipe suggestions*
 ### 🤖 AI Cooking Assistant
 <img width="1820" height="873" alt="Image" src="https://github.com/user-attachments/assets/e87537a3-6d88-4cbe-8d39-ce6ff86cf3d6" />
@@ -725,23 +725,23 @@ $breakpoints: (
 
 
 ### 👤 User Dashboard
-![User Dashboard](\assets\screens\user-dashboard.png)
+![Image](https://github.com/user-attachments/assets/359e5664-1aea-44be-9828-1819948f7a81)
 *Personal dashboard with saved recipes and cooking history*
 
 ### 👨‍🍳 Chefs Page
-![Chefs Section](\assets\screens\chefs-page.png)
+![Image](https://github.com/user-attachments/assets/d32b40c5-e5cf-461c-852c-ad55ce9ccb4d)
 *Browse professional chefs and their specialties*
 
 ### 🎨 Chef Profile Page
-![Chef Profile](\assets\screens\chef-profile.png)
+![Image](https://github.com/user-attachments/assets/ce7aa538-9a52-4b9f-a59a-3f2c67e56ebf)
 *Detailed chef profile with recipes and ratings*
 
 ### 📝 Recipe Adding Form
-![Recipe Adding Form](\assets\screens\recipe-add-form.png)
+<img width="598" height="746" alt="Image" src="https://github.com/user-attachments/assets/f0a68c57-9c88-4e2a-b1cf-c9d14df2b311" />
 *User-friendly form to add new recipes*
 
 ### 🔔 Notification Page
-![Notification Page](\assets\screens\notification-page.png)
+<img width="1910" height="872" alt="Image" src="https://github.com/user-attachments/assets/28646eed-23a9-4f57-866c-905badb4729f" />
 *User notifications and alerts*
 
 
