@@ -702,42 +702,43 @@ $breakpoints: (
 </div>
 ```
 
-📸 Screenshots Section
 ## 📸 Screenshots & Demo
 
-### **🏠 Home Page**
-![Home Page](/assets/screens/home-page.jpeg)
+### 🏠 Home Page
+![Home Page](/assets/screens/home-page.png)
 *Modern, responsive home page with featured recipes and search functionality*
 
-### **🍳 Recipe Details**
-![Recipe Details](/assets/screens/recipes-page.jpeg)
+### 🍳 Recipe Details
+![Recipe Details](/assets/screens/recipe-details.png)
 *Interactive recipe page with ingredients, instructions, and cooking timer*
 
-### **🔍 Recipes View Page**
-![Recipe Search](/assets/screens/recipe-detail.png)
+### 🔍 Recipes View Page
+![Recipe Search](/assets/screens/recipe-search.png)
 *Advanced search with filters for categories, cooking time, and difficulty*
 
-### **🤖 AI Cooking Assistant**
-![AI Assistant](/assets/screens/ai-assistant.png)
-(/assets/screens/ai-chatbot.png)
+### 🤖 AI Cooking Assistant
+![AI Assistant](/assets/screens/ai-chatbot.png)
 *Interactive AI chat for cooking tips and recipe suggestions*
 
-### **👤 User Dashboard**
-![User Dashboard](/assets/screens/user-profile.jpeg)
+### 👤 User Dashboard
+![User Dashboard](/assets/screens/user-dashboard.png)
 *Personal dashboard with saved recipes and cooking history*
 
-### **chefs - page**
-![chefs section ](/assets/screens/chefs-section.jpeg)
+### 👨‍🍳 Chefs Page
+![Chefs Section](/assets/screens/chefs-page.png)
+*Browse professional chefs and their specialties*
 
+### 🎨 Chef Profile Page
+![Chef Profile](/assets/screens/chef-profile.png)
+*Detailed chef profile with recipes and ratings*
 
-### **🎨 chefs profile page**
-![chefs profile ](/assets/screens/chef-profile.jpeg)
+### 📝 Recipe Adding Form
+![Recipe Adding Form](/assets/screens/recipe-add-form.png)
+*User-friendly form to add new recipes*
 
-### **🎨 Recipe Adding Form**
-![recipe adding form ](/assets/screens/recipe add-form.png)
-
-### **🎨 notification page**
-![notification page ](/assets/screens/notification-page.png)
+### 🔔 Notification Page
+![Notification Page](/assets/screens/notification-page.png)
+*User notifications and alerts*
 
 
 
