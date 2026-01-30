@@ -1,0 +1,153 @@
+<div class="edit-recipe-container">
+  <h1>Edit Recipe</h1>
+  <button type="button" class="click-me" [routerLink]="['/profile']">← Back to Profile</button>
+  
+  <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+    <!-- Title -->
+    <div class="form-group">
+      <label for="title">Title*</label>
+      <input id="title" formControlName="title" type="text" placeholder="Recipe title">
+      <small *ngIf="isFieldInvalid('title')" class="error">
+        <span *ngIf="recipeForm.get('title')?.errors?.['required']">Title is required</span>
+        <span *ngIf="recipeForm.get('title')?.errors?.['minlength']">Title must be at least 3 characters</span>
+      </small>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label for="description">Description*</label>
+      <textarea id="description" formControlName="description" placeholder="Describe your recipe"></textarea>
+      <small *ngIf="isFieldInvalid('description')" class="error">
+        <span *ngIf="recipeForm.get('description')?.errors?.['required']">Description is required</span>
+        <span *ngIf="recipeForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters</span>
+      </small>
+    </div>
+
+    <!-- Times and Servings -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="prepTime">Prep Time (minutes)*</label>
+        <input id="prepTime" formControlName="prepTime" type="number" min="1" placeholder="e.g., 15">
+        <small *ngIf="isFieldInvalid('prepTime')" class="error">
+          Prep time is required and must be at least 1 minute
+        </small>
+      </div>
+      <div class="form-group">
+        <label for="cookTime">Cook Time (minutes)*</label>
+        <input id="cookTime" formControlName="cookTime" type="number" min="1" placeholder="e.g., 30">
+        <small *ngIf="isFieldInvalid('cookTime')" class="error">
+          Cook time is required and must be at least 1 minute
+        </small>
+      </div>
+      <div class="form-group">
+        <label for="servings">Servings*</label>
+        <input id="servings" formControlName="servings" type="number" min="1" placeholder="e.g., 4">
+        <small *ngIf="isFieldInvalid('servings')" class="error">
+          Servings is required and must be at least 1
+        </small>
+      </div>
+    </div>
+
+    <!-- Category -->
+    <div class="form-group">
+      <label for="category">Category*</label>
+      <select id="category" formControlName="category">
+        <option value="">Select a category</option>
+        <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+      </select>
+      <small *ngIf="isFieldInvalid('category')" class="error">
+        Category is required
+      </small>
+    </div>
+
+    <!-- Difficulty -->
+    <div class="form-group">
+      <label for="difficulty">Difficulty*</label>
+      <select id="difficulty" formControlName="difficulty">
+        <option value="">Select difficulty</option>
+        <option value="Easy">Easy</option>
+        <option value="Medium">Medium</option>
+        <option value="Hard">Hard</option>
+      </select>
+      <small *ngIf="isFieldInvalid('difficulty')" class="error">
+        Difficulty is required
+      </small>
+    </div>
+
+    <!-- Ingredients -->
+    <div class="form-group">
+      <label>Ingredients*</label>
+      <div formArrayName="ingredients">
+        <div *ngFor="let ingredient of ingredients.controls; let i = index" [formGroupName]="i" class="ingredient-row">
+          <input formControlName="amount" placeholder="Amount (e.g., 1 cup)">
+          <input formControlName="name" placeholder="Ingredient name*">
+          <button type="button" (click)="removeIngredient(i)" [disabled]="ingredients.length === 1">Remove</button>
+          <small *ngIf="isFormArrayItemInvalid('ingredients', i, 'name')" class="error">
+            Ingredient name is required
+          </small>
+        </div>
+        <button type="button" (click)="addIngredient()">Add Ingredient</button>
+        <small *ngIf="ingredients.invalid && ingredients.touched" class="error">
+          At least one ingredient is required
+        </small>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="form-group">
+      <label>Instructions*</label>
+      <div formArrayName="instructions">
+        <div *ngFor="let instruction of instructions.controls; let i = index" [formGroupName]="i" class="instruction-row">
+          <textarea formControlName="text" placeholder="Step description*"></textarea>
+          <input formControlName="imageUrl" placeholder="Image URL (optional)">
+          <button type="button" (click)="removeInstruction(i)" [disabled]="instructions.length === 1">Remove</button>
+          <small *ngIf="isFormArrayItemInvalid('instructions', i, 'text')" class="error">
+            Instruction text is required and must be at least 10 characters
+          </small>
+        </div>
+        <button type="button" (click)="addInstruction()">Add Instruction</button>
+        <small *ngIf="instructions.invalid && instructions.touched" class="error">
+          At least one instruction is required
+        </small>
+      </div>
+    </div>
+
+    <!-- Nutrition -->
+    <div class="form-group">
+      <label>Nutrition Info (per serving, optional)</label>
+      <div formGroupName="nutrition">
+        <div class="nutrition-row">
+          <input formControlName="calories" type="number" placeholder="Calories" min="0">
+          <input formControlName="carbs" type="number" placeholder="Carbs (g)" min="0">
+          <input formControlName="protein" type="number" placeholder="Protein (g)" min="0">
+          <input formControlName="fat" type="number" placeholder="Fat (g)" min="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea id="notes" formControlName="notes" placeholder="Additional notes"></textarea>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="form-group">
+      <label for="image">Recipe Image</label>
+      <input id="image" type="file" (change)="onImageSelected($event)" accept="image/*">
+      <div *ngIf="imagePreview" class="image-preview">
+        <img [src]="imagePreview" alt="Recipe preview" (error)="handleImageError($event)">
+        <button type="button" (click)="removeImage()">Remove Image</button>
+      </div>
+      <div *ngIf="!imagePreview" class="image-placeholder">
+        <span>No image selected</span>
+      </div>
+      <small *ngIf="imageError" class="error">{{imageError}}</small>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" [disabled]="recipeForm.invalid || isSubmitting" class="submit-btn">
+      {{ isSubmitting ? 'Updating Recipe...' : 'Update Recipe' }}
+    </button>
+  </form>
+</div>

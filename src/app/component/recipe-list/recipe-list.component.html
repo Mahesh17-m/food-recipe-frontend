@@ -1,0 +1,169 @@
+<div class="recipe-list-container">
+  <!-- ======= Category Filter Section ======= -->
+  <div class="category-filter" *ngIf="categories.length > 0">
+    <div
+      class="category-item"
+      *ngFor="let cat of categories"
+      [class.active]="selectedCategory === cat"
+      (click)="selectCategory(cat)"
+    >
+      <i class="bi bi-grid"></i>
+      <span>{{ cat }}</span>
+    </div>
+  </div>
+
+  <!-- ======= Filter Button ======= -->
+  <div class="filter-toggle">
+    <button (click)="toggleFilterPanel()">
+      <i class="bi bi-funnel"></i>
+      Filters
+    </button>
+  </div>
+
+  <!-- ======= Filter Section ======= -->
+  <div
+    class="filter-section"
+    *ngIf="showFilters"
+    
+  >
+    <div class="filter-options">
+      <div class="filter-group">
+        <label>Category</label>
+        <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat">
+            {{ cat }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Time</label>
+        <select [(ngModel)]="maxTime" (change)="applyFilters()">
+          <option value="">Any Time</option>
+          <option value="15">Under 15 min</option>
+          <option value="30">Under 30 min</option>
+          <option value="60">Under 1 hour</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Difficulty</label>
+        <select [(ngModel)]="difficulty" (change)="applyFilters()">
+          <option value="">Any Difficulty</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+
+      <button class="clear-filters" (click)="clearFilters()">Clear All</button>
+    </div>
+  </div>
+
+  <!-- ======= Recipe Cards ======= -->
+  <div class="recipe-grid" *ngIf="filteredRecipes.length > 0 && !isLoading">
+    <div
+      class="recipe-card"
+      *ngFor="
+        let recipe of filteredRecipes
+          | slice: (currentPage - 1) * recipesPerPage : currentPage * recipesPerPage
+      "
+    >
+      <div class="card-image">
+        <img
+          [src]="recipe.imageUrl || 'assets/recipe-placeholder.jpg'"
+          [alt]="recipe.title"
+          (error)="handleImageError($event)"
+        />
+        <div class="card-badge" *ngIf="(recipe.rating ?? 0) >= 4.5">
+          <i class="bi bi-star-fill"></i> {{ recipe.rating | number: '1.1-1' }}
+        </div>
+      </div>
+
+      <div class="card-content">
+        <h3>{{ recipe.title }}</h3>
+        <p class="description">
+          {{ recipe.description || '' | truncate: 100 }}
+        </p>
+
+        <div class="recipe-meta">
+          <span>
+            <i class="bi bi-clock"></i>
+            {{ (recipe.prepTime + recipe.cookTime) || 0 }} min
+          </span>
+          <span>
+            <i class="bi bi-person"></i>
+            Servings: {{ recipe.servings || 1 }}
+          </span>
+          <span *ngIf="recipe.difficulty">
+            <i class="bi bi-bar-chart"></i> {{ recipe.difficulty }}
+          </span>
+        </div>
+
+        <div class="card-actions">
+          <a [routerLink]="['/recipes', recipe._id]" class="view-btn">
+            View Recipe
+          </a>
+
+          <div class="action-buttons" *ngIf="isLoggedIn$ | async">
+            <button
+              class="favorite-btn"
+              [class.favorited]="isRecipeFavorited(recipe._id)"
+              (click)="toggleFavorite(recipe._id)"
+              title="Favorite"
+            >
+              <i
+                class="bi"
+                [ngClass]="
+                  isRecipeFavorited(recipe._id) ? 'bi-heart-fill' : 'bi-heart'
+                "
+              ></i>
+            </button>
+
+            <button
+              class="save-btn"
+              [class.saved]="isRecipeSaved(recipe._id)"
+              (click)="toggleSave(recipe._id)"
+              title="Save"
+            >
+              <i
+                class="bi"
+                [ngClass]="
+                  isRecipeSaved(recipe._id) ? 'bi-bookmark-fill' : 'bi-bookmark'
+                "
+              ></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Pagination ======= -->
+  <div class="pagination" *ngIf="totalPages > 1 && !isLoading">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+      <button
+        (click)="goToPage(i + 1)"
+        [class.active]="currentPage === i + 1"
+      >
+        {{ i + 1 }}
+      </button>
+    </ng-container>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      Next
+    </button>
+  </div>
+
+  <!-- ======= Empty / Loading States ======= -->
+  <div class="empty-state" *ngIf="filteredRecipes.length === 0 && !isLoading">
+    <img src="assets/no-recipes.svg" alt="No recipes found" />
+    <h3>No recipes match your filters</h3>
+    <button (click)="clearFilters()">Clear filters</button>
+  </div>
+
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+  </div>
+</div>

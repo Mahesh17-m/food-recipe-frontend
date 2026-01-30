@@ -1,0 +1,588 @@
+<div class="home-container">
+<!-- Hero Section with 4 Custom Templates -->
+<section class="hero-section" (mouseenter)="pauseAutoSlide()" (mouseleave)="resumeAutoSlide()">
+  <div class="carousel">
+    <div class="carousel-inner">
+      <!-- Template 1: Non-Veg Theme - Video Left, Content Right -->
+      <div class="carousel-item template-nonveg" [class.active]="0 === currentSlideIndex">
+        <div class="split-screen-container">
+          <!-- Left Side: Video (60% width) -->
+          <div class="screen-half video-screen video-left">
+            <div class="full-screen-video">
+              <video class="hero-video" autoplay loop muted playsinline>
+                <source src="assets/videos/nonveg-cooking.mp4" type="video/mp4">
+                <div class="video-fallback" style="background-image: url('assets/images/nonveg-backup.jpg');"></div>
+              </video>
+              <div class="video-shade"></div>
+              <!-- Video Content Overlay -->
+              <div class="screen-content video-content-overlay">
+                <div class="screen-content-inner">
+                  <h1 class="hero-title typing-container">
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Sizzling</span>
+                    </span>
+                    <span class="title-line accent-line typing-line">
+                      <span class="typing-text">Non-Veg</span>
+                      <span class="typing-cursor">|</span>
+                    </span>
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Delights</span>
+                    </span>
+                  </h1>
+                  
+                  <div class="hero-description typing-subtitle">
+                    <div class="description-line typing-text">Premium Quality Meats & Seafood Recipes</div>
+                    <div class="description-subline typing-script">Experience the finest cuts and flavors from around the world</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Side: Content (40% width) -->
+          <div class="screen-half content-screen content-right">
+            <div class="screen-content">
+              <div class="screen-content-inner">
+                <div class="screen-header">
+                  <div class="screen-tags">
+                    <span class="screen-tag tag-meat">
+                      <i class="fas fa-drumstick-bite"></i> Chicken
+                    </span>
+                    <span class="screen-tag tag-seafood">
+                      <i class="fas fa-fish"></i> Seafood
+                    </span>
+                    <span class="screen-tag tag-beef">
+                      <i class="fas fa-hamburger"></i> Beef
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="screen-gallery">
+                  <!-- Image 1 with Horizontal Brush Effect -->
+                  <div class="gallery-item gallery-item-1">
+                    <div class="gallery-image-frame horizontal-brush">
+                      <img src="\assets\nonveg-1.jpg" alt="Grilled Chicken" (error)="handleImageError($event)">
+                      <div class="brush-effect horizontal"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Grilled Chicken
+                      </h3>
+                      <p class="caption-text">Perfectly charred & juicy chicken with herbs</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Image 2 with Vertical Brush Effect -->
+                  <div class="gallery-item gallery-item-2">
+                    <div class="gallery-image-frame vertical-brush">
+                      <img src="\assets\nonveg-2.jpg" alt="Seafood Platter" (error)="handleImageError($event)">
+                      <div class="brush-effect vertical"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-fish"></i> Seafood Platter
+                      </h3>
+                      <p class="caption-text">Fresh ocean catch with zesty lemon butter</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="screen-action">
+                  <button class="screen-action-btn" (click)="filterByCategory('Non-Vegetarian')">
+                    <i class="fas fa-fire"></i> View Non-Veg Recipes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Template 2: Pancakes Theme - Video Right, Content Left -->
+      <div class="carousel-item template-pancakes" [class.active]="1 === currentSlideIndex">
+        <div class="split-screen-container">
+          <!-- Left Side: Content (40% width) -->
+          <div class="screen-half content-screen content-left">
+            <div class="screen-content">
+              <div class="screen-content-inner">
+                <div class="screen-header">
+                  <div class="screen-tags">
+                    <span class="screen-tag tag-pancake">
+                      <i class="fas fa-bacon"></i> Fluffy
+                    </span>
+                    <span class="screen-tag tag-syrup">
+                      <i class="fas fa-wine-bottle"></i> Syrupy
+                    </span>
+                    <span class="screen-tag tag-breakfast">
+                      <i class="fas fa-mug-hot"></i> Breakfast
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="screen-gallery">
+                  <!-- Image 1 with Horizontal Brush Effect -->
+                  <div class="gallery-item gallery-item-1">
+                    <div class="gallery-image-frame horizontal-brush">
+                      <img src="assets/images/pancake-1.jpg" alt="Berry Pancakes" (error)="handleImageError($event)">
+                      <div class="brush-effect horizontal"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Berry Pancakes
+                      </h3>
+                      <p class="caption-text">Fluffy stacks with fresh berries & maple syrup</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Image 2 with Vertical Brush Effect -->
+                  <div class="gallery-item gallery-item-2">
+                    <div class="gallery-image-frame vertical-brush">
+                      <img src="assets/images/pancake-2.jpg" alt="Chocolate Pancakes" (error)="handleImageError($event)">
+                      <div class="brush-effect vertical"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Chocolate Pancakes
+                      </h3>
+                      <p class="caption-text">Rich chocolatey goodness with whipped cream</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="screen-action">
+                  <button class="screen-action-btn" (click)="filterByCategory('Breakfast')">
+                    <i class="fas fa-pancakes"></i> View Pancake Recipes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Side: Video (60% width) -->
+          <div class="screen-half video-screen video-right">
+            <div class="full-screen-video">
+              <video class="hero-video" autoplay loop muted playsinline>
+                <source src="assets\videos\pancakes-making.mp4" type="video/mp4">
+                <div class="video-fallback" style="background-image: url('assets/images/pancakes-backup.jpg');"></div>
+              </video>
+              <div class="video-shade"></div>
+              <!-- Video Content Overlay -->
+              <div class="screen-content video-content-overlay">
+                <div class="screen-content-inner">
+                  <h1 class="hero-title typing-container">
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Fluffy</span>
+                    </span>
+                    <span class="title-line accent-line typing-line">
+                      <span class="typing-text">Pancake</span>
+                      <span class="typing-cursor">|</span>
+                    </span>
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Paradise</span>
+                    </span>
+                  </h1>
+                  
+                  <div class="hero-description typing-subtitle">
+                    <div class="description-line typing-text">Perfect Breakfast & Brunch Delights</div>
+                    <div class="description-subline typing-script">Wake up to sweet, fluffy clouds of breakfast happiness</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Template 3: Fast Food Theme - Video Left, Content Right -->
+      <div class="carousel-item template-fastfood" [class.active]="2 === currentSlideIndex">
+        <div class="split-screen-container">
+          <!-- Left Side: Video (60% width) -->
+          <div class="screen-half video-screen video-left">
+            <div class="full-screen-video">
+              <video class="hero-video" autoplay loop muted playsinline>
+                <source src="\assets\videos\fastfood-making.mp4" type="video/mp4">
+                <div class="video-fallback" style="background-image: url('assets/images/fastfood-backup.jpg');"></div>
+              </video>
+              <div class="video-shade"></div>
+              <!-- Video Content Overlay -->
+              <div class="screen-content video-content-overlay">
+                <div class="screen-content-inner">
+                  <h1 class="hero-title typing-container">
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Fast</span>
+                    </span>
+                    <span class="title-line accent-line typing-line">
+                      <span class="typing-text">Food</span>
+                      <span class="typing-cursor">|</span>
+                    </span>
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Fever</span>
+                    </span>
+                  </h1>
+                  
+                  <div class="hero-description typing-subtitle">
+                    <div class="description-line typing-text">Quick & Delicious Comfort Foods</div>
+                    <div class="description-subline typing-script">Get your cravings satisfied in 30 minutes or less</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Side: Content (40% width) -->
+          <div class="screen-half content-screen content-right">
+            <div class="screen-content">
+              <div class="screen-content-inner">
+                <div class="screen-header">
+                  <div class="screen-tags">
+                    <span class="screen-tag tag-burger">
+                      <i class="fas fa-hamburger"></i> Burgers
+                    </span>
+                    <span class="screen-tag tag-pizza">
+                      <i class="fas fa-pizza-slice"></i> Pizza
+                    </span>
+                    <span class="screen-tag tag-fries">
+                      <i class="fas fa-french-fries"></i> Fries
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="screen-gallery">
+                  <!-- Image 1 with Horizontal Brush Effect -->
+                  <div class="gallery-item gallery-item-1">
+                    <div class="gallery-image-frame horizontal-brush">
+                      <img src="\assets\fastfood-1.jpg" alt="Cheese Burger" (error)="handleImageError($event)">
+                      <div class="brush-effect horizontal"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Cheese Burger
+                      </h3>
+                      <p class="caption-text">Double patty with melted cheese & special sauce</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Image 2 with Vertical Brush Effect -->
+                  <div class="gallery-item gallery-item-2">
+                    <div class="gallery-image-frame vertical-brush">
+                      <img src="assets/fastfood-2.jpg" alt="Loaded Pizza" (error)="handleImageError($event)">
+                      <div class="brush-effect vertical"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Loaded Pizza
+                      </h3>
+                      <p class="caption-text">Crispy crust with all your favorite toppings</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="screen-action">
+                  <button class="screen-action-btn" (click)="filterByCategory('Snacks')">
+                    <i class="fas fa-bolt"></i> View Fast Food Recipes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Template 4: Eggs Theme - Video Right, Content Left -->
+      <div class="carousel-item template-eggs" [class.active]="3 === currentSlideIndex">
+        <div class="split-screen-container">
+          <!-- Left Side: Content (40% width) -->
+          <div class="screen-half content-screen content-left">
+            <div class="screen-content">
+              <div class="screen-content-inner">
+                <div class="screen-header">
+                  <div class="screen-tags">
+                    <span class="screen-tag tag-omelette">
+                      <i class="fas fa-egg"></i> Omelette
+                    </span>
+                    <span class="screen-tag tag-boiled">
+                      <i class="fas fa-egg"></i> Boiled
+                    </span>
+                    <span class="screen-tag tag-scrambled">
+                      <i class="fas fa-egg"></i> Scrambled
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="screen-gallery">
+                  <!-- Image 1 with Horizontal Brush Effect -->
+                  <div class="gallery-item gallery-item-1">
+                    <div class="gallery-image-frame horizontal-brush">
+                      <img src="assets/images/eggs-1.jpg" alt="Egg Benedict" (error)="handleImageError($event)">
+                      <div class="brush-effect horizontal"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Egg Benedict
+                      </h3>
+                      <p class="caption-text">Perfectly poached eggs with hollandaise sauce</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Image 2 with Vertical Brush Effect -->
+                  <div class="gallery-item gallery-item-2">
+                    <div class="gallery-image-frame vertical-brush">
+                      <img src="assets/images/eggs-2.jpg" alt="Omelette" (error)="handleImageError($event)">
+                      <div class="brush-effect vertical"></div>
+                    </div>
+                    <div class="gallery-caption">
+                      <h3 class="caption-title">
+                        <i class="fas fa-utensils"></i> Veggie Omelette
+                      </h3>
+                      <p class="caption-text">Fluffy omelette filled with fresh vegetables</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="screen-action">
+                  <button class="screen-action-btn" (click)="filterByCategory('Breakfast')">
+                    <i class="fas fa-egg"></i> View Egg Recipes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Side: Video (60% width) -->
+          <div class="screen-half video-screen video-right">
+            <div class="full-screen-video">
+              <video class="hero-video" autoplay loop muted playsinline>
+                <source src="\assets\videos\eggs-cooking.mp4" type="video/mp4">
+                <div class="video-fallback" style="background-image: url('assets/images/eggs-backup.jpg');"></div>
+              </video>
+              <div class="video-shade"></div>
+              <!-- Video Content Overlay -->
+              <div class="screen-content video-content-overlay">
+                <div class="screen-content-inner">
+                  <h1 class="hero-title typing-container">
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Egg-cellent</span>
+                    </span>
+                    <span class="title-line accent-line typing-line">
+                      <span class="typing-text">Eggs</span>
+                      <span class="typing-cursor">|</span>
+                    </span>
+                    <span class="title-line typing-line">
+                      <span class="typing-text">Everywhere</span>
+                    </span>
+                  </h1>
+                  
+                  <div class="hero-description typing-subtitle">
+                    <div class="description-line typing-text">Versatile Protein-Packed Recipes</div>
+                    <div class="description-subline typing-script">From breakfast to dinner, eggs make every meal better</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Simple Arrow Controls at Edges -->
+    <button class="carousel-control prev" (click)="prevSlide()">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="carousel-control next" (click)="nextSlide()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    
+    <!-- Minimal Carousel Indicators -->
+    <div class="carousel-indicators">
+      <div class="carousel-indicator" *ngFor="let template of templates; let i = index" 
+           [class.active]="i === currentSlideIndex" (click)="setActiveSlide(i)"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Recipe Switching Section -->
+<section class="recipe-switcher">
+  <div class="switcher-tabs">
+    <button 
+      class="tab-button" 
+      *ngFor="let tab of recipeTabs"
+      [class.active]="activeTab === tab.id"
+      (click)="switchTab(tab.id)"
+    >
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content" *ngIf="activeRecipes.length > 0">
+    <div class="recipe-grid">
+      <div class="recipe-card" *ngFor="let recipe of activeRecipes" (click)="viewRecipe(recipe._id)">
+        <div class="card-image">
+          <img [src]="recipe.imageUrl || 'assets/recipe-placeholder.jpg'" 
+               [alt]="recipe.title" (error)="handleImageError($event)">
+          <div class="card-top-badges">
+            <div class="card-rating" *ngIf="hasRating(recipe)">
+              <i class="bi bi-star-fill"></i> {{ getRecipeRating(recipe) | number: '1.1-1' }}
+            </div>
+            <div class="card-rating new" *ngIf="!hasRating(recipe)">
+              <i class="bi bi-star"></i> New
+            </div>
+            <div class="card-actions">
+              <button class="action-btn save-btn" (click)="toggleSave(recipe._id, $event)">
+                <i class="bi" [class.bi-bookmark]="!isRecipeSaved(recipe._id)" [class.bi-bookmark-fill]="isRecipeSaved(recipe._id)"></i>
+              </button>
+              <button class="action-btn favorite-btn" (click)="toggleFavorite(recipe._id, $event)">
+                <i class="bi" [class.bi-heart]="!isRecipeFavorited(recipe._id)" [class.bi-heart-fill]="isRecipeFavorited(recipe._id)"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-content">
+          <h3 class="recipe-title">{{recipe.title}}</h3>
+          <p class="recipe-description">{{ truncateDescription(recipe.description, 80) }}</p>
+          <div class="recipe-meta">
+            <div class="meta-item">
+              <i class="bi bi-clock"></i>
+              <span>{{(recipe.prepTime + recipe.cookTime) || 15}} min</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-card-text"></i>
+              <span>{{getRecipeCategory(recipe)}}</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-graph-up"></i>
+              <span>{{recipe.difficulty || 'Beginner'}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="activeRecipes.length === 0 && !isLoading">
+    <img src="assets/no-recipes.svg" alt="No recipes found">
+    <h3>No recipes found for this category</h3>
+    <p>Try selecting a different tab or check back later for new recipes.</p>
+  </div>
+</section>
+
+<!-- Recipe of the Day Poster -->
+<section class="recipe-of-the-day" *ngIf="recipeOfTheDay">
+  <div class="recipe-poster" [style.background-image]="'url(' + (recipeOfTheDay.imageUrl || 'assets/recipe-placeholder.jpg') + ')'">
+    <div class="poster-overlay">
+      <div class="poster-content">
+        <div class="poster-text">
+          <div class="poster-badge">Recipe of the Day</div>
+          <h2 class="poster-title">{{recipeOfTheDay.title}}</h2>
+          <p class="poster-description">{{ truncateDescription(recipeOfTheDay.description, 120) }}</p>
+          <div class="poster-meta">
+            <div class="meta-item">
+              <i class="bi bi-clock"></i>
+              <span>{{(recipeOfTheDay.prepTime + recipeOfTheDay.cookTime) || 15}} min</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-card-text"></i>
+              <span>{{getRecipeCategory(recipeOfTheDay)}}</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-graph-up"></i>
+              <span>{{recipeOfTheDay.difficulty || 'Beginner'}}</span>
+            </div>
+          </div>
+          <button class="poster-btn" (click)="viewRecipe(recipeOfTheDay._id)">View Recipe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- New Recipes Section (2x4 Grid) -->
+<section class="new-recipes">
+  <div class="section-header">
+    <h2 class="section-title">New Recipes</h2>
+    <p class="section-description">Explore our latest recipes, from quick snacks to heavy meals and indulgent desserts.</p>
+  </div>
+  
+  <div class="new-recipes-grid">
+    <div class="new-recipe-card" *ngFor="let recipe of newRecipes" (click)="viewRecipe(recipe._id)">
+      <div class="new-card-image">
+        <img [src]="recipe.imageUrl || 'assets/recipe-placeholder.jpg'" 
+             [alt]="recipe.title" (error)="handleImageError($event)">
+        <div class="new-card-top-badges">
+          <div class="new-card-rating" *ngIf="hasRating(recipe)">
+            <i class="bi bi-star-fill"></i> {{ getRecipeRating(recipe) | number: '1.1-1' }}
+          </div>
+          <div class="new-card-rating new" *ngIf="!hasRating(recipe)">
+            <i class="bi bi-star"></i> New
+          </div>
+          <div class="new-card-actions">
+            <button class="new-action-btn save-btn" (click)="toggleSave(recipe._id, $event)">
+              <i class="bi" [class.bi-bookmark]="!isRecipeSaved(recipe._id)" [class.bi-bookmark-fill]="isRecipeSaved(recipe._id)"></i>
+            </button>
+            <button class="new-action-btn favorite-btn" (click)="toggleFavorite(recipe._id, $event)">
+              <i class="bi" [class.bi-heart]="!isRecipeFavorited(recipe._id)" [class.bi-heart-fill]="isRecipeFavorited(recipe._id)"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="new-card-content">
+        <h3 class="new-recipe-title">{{recipe.title}}</h3>
+        <p class="new-recipe-description">{{ truncateDescription(recipe.description, 80) }}</p>
+        <div class="new-recipe-meta">
+          <div class="new-meta-item">
+            <i class="bi bi-clock"></i>
+            <span>{{(recipe.prepTime + recipe.cookTime) || 15}} min</span>
+          </div>
+          <div class="new-meta-item">
+            <i class="bi bi-card-text"></i>
+            <span>{{getRecipeCategory(recipe)}}</span>
+          </div>
+          <div class="new-meta-item">
+            <i class="bi bi-graph-up"></i>
+            <span>{{recipe.difficulty || 'Beginner'}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recipes & Chefs Section -->
+<section class="featured-sections">
+  <div class="container">
+    <div class="featured-grid">
+      <!-- Recipes Box -->
+      <div class="featured-box recipes-box">
+        <div class="featured-content">
+          <h2>Learn from the best and create culinary magic at home.</h2>
+          <p>Get inspired by expert tips and techniques to perfect your skills. Explore recipes that help you master new dishes, adding confidence and creativity to your home cooking experience.</p>
+          <div class="divider"></div>
+          <button class="featured-btn" (click)="navigateToRecipes()">View Recipes</button>
+        </div>
+      </div>
+      
+      <!-- Chefs Box -->
+      <div class="featured-box chefs-box">
+        <div class="featured-content">
+          <h2>Add flavor, flair, and a touch of creativity to your meals.</h2>
+          <p>Elevate your dishes with bold flavors and creative twists. From vibrant ingredients to expert techniques, discover recipes that transform your everyday cooking into something extraordinary.</p>
+          <div class="divider"></div>
+          <button class="featured-btn" (click)="navigateToChefs()">View Chefs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Popular Categories -->
+<section class="categories">
+  <h2 class="section-title">Browse Categories</h2>
+  <div class="category-grid">
+    <div class="category-card" *ngFor="let category of categories" (click)="filterByCategory(category.name)">
+      <img [src]="'assets/' + category.image" [alt]="category.name" (error)="handleImageError($event)">
+      <h3>{{category.name}}</h3>
+    </div>
+  </div>
+</section>
+</div>

@@ -1,0 +1,186 @@
+<div class="author-profile-container">
+  <ng-container *ngIf="isLoading; else loadedContent">
+    <div class="loading-container">
+      <div class="loader"></div>
+      <p class="loading-text">Loading author profile...</p>
+    </div>
+  </ng-container>
+
+  <ng-template #loadedContent>
+    <div *ngIf="author; else noAuthor">
+      <!-- Cover Section -->
+      <div class="cover-section">
+        <div 
+          class="cover-image" 
+          [ngStyle]="{'background-image': 'url(' + getCoverImageUrl(author.coverPicture) + ')'}"
+          (error)="handleImageError($event)"
+        >
+          <button class="back-button" (click)="onBack()" type="button">
+            <svg class="back-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <div class="header-left">
+          <div class="avatar-wrapper">
+            <div 
+              class="avatar-image" 
+              [ngStyle]="{'background-image': 'url(' + getProfileImageUrl() + ')'}"
+              (error)="handleImageError($event)"
+            ></div>
+          </div>
+          <div class="profile-info">
+            <h1 class="username">{{ author.name || author.username }}</h1>
+            <p class="tagline" *ngIf="author.tagline">{{ author.tagline }}</p>
+            <div class="user-level-row">
+              <div class="user-level" *ngIf="author.userLevel">
+                <span class="level-badge">{{ author.userLevel }}</span>
+              </div>
+              <div class="profile-actions">
+                <button 
+                  *ngIf="!isOwnProfile && currentUser"
+                  class="follow-button" 
+                  [class.following]="isFollowing"
+                  (click)="toggleFollow()"
+                  type="button"
+                >
+                  <span *ngIf="isFollowing">Following</span>
+                  <span *ngIf="!isFollowing">Follow</span>
+                </button>
+                <button 
+                  *ngIf="isOwnProfile"
+                  class="edit-profile-button" 
+                  (click)="navigateToProfileEdit()"
+                  type="button"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                  </svg>
+                  Edit Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <div class="stats-section">
+            <div class="stats-grid">
+              <div class="stat-item" *ngFor="let stat of getAuthorStats() | slice:0:4">
+                <svg class="stat-icon" viewBox="0 0 24 24" [attr.fill]="stat.iconColor">
+                  <path [attr.d]="stat.iconPath"/>
+                </svg>
+                <div class="stat-details">
+                  <div class="stat-value">{{ stat.value | number }}</div>
+                  <div class="stat-label">{{ stat.label }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recipes Section -->
+      <section class="recipes-section">
+        <div class="section-header">
+          <h2 class="section-title">Recipes ({{ author.recipesCount || recipes.length }})</h2>
+          <div class="section-description" *ngIf="author.bio">
+            {{ author.bio }}
+          </div>
+        </div>
+        
+        <div class="recipe-grid" *ngIf="recipes.length > 0; else noRecipes">
+          <div class="recipe-card" *ngFor="let recipe of recipes" (click)="navigateToRecipe(recipe._id!)">
+            <!-- Image + Top Badges -->
+            <div class="card-image">
+              <!-- FIX: Use imageUrl like my-recipes component -->
+              <img 
+                [src]="recipe.imageUrl || recipe.image || 'assets/recipe-placeholder.jpg'" 
+                [alt]="recipe.title"
+                (error)="onRecipeImageError($event)"
+                class="recipe-image"
+              >
+
+              <div class="card-top-badges">
+                <!-- Left: New or Rating Badge -->
+                <div class="card-rating-badge" *ngIf="recipe.isNew">
+                  <i class="fas fa-star"></i> New
+                </div>
+                <div class="card-rating-badge" *ngIf="!recipe.isNew">
+                  <i class="fas fa-star"></i> {{ (recipe.rating || 4.8) | number:'1.1-1' }}
+                </div>
+
+                <!-- Right: Save & Favorite Buttons -->
+                <div class="card-actions">
+                  <button 
+                    class="action-btn save-btn" 
+                    [class.active]="recipe.isSaved"
+                    (click)="saveRecipe(recipe, $event); $event.stopPropagation()"
+                    type="button"
+                  >
+                    <i class="far fa-bookmark" *ngIf="!recipe.isSaved"></i>
+                    <i class="fas fa-bookmark" *ngIf="recipe.isSaved"></i>
+                  </button>
+                  <button 
+                    class="action-btn favorite-btn"
+                    [class.active]="recipe.isFavorite"
+                    (click)="toggleFavorite(recipe, $event); $event.stopPropagation()"
+                    type="button"
+                  >
+                    <i class="far fa-heart" *ngIf="!recipe.isFavorite"></i>
+                    <i class="fas fa-heart" *ngIf="recipe.isFavorite"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="card-content">
+              <h3 class="recipe-title">{{ recipe.title }}</h3>
+              <p class="recipe-description">
+                {{ recipe.description || 'A delicious and easy homemade recipe with fresh ingredients.' }}
+              </p>
+
+              <div class="recipe-meta">
+                <div class="meta-item">
+                  <i class="far fa-clock"></i>
+                  <span>{{ recipe.prepTime || '30 min' }}</span>
+                </div>
+                <div class="meta-item">
+                  <i class="fas fa-fire"></i>
+                  <span>{{ recipe.difficulty || 'Medium' }}</span>
+                </div>
+                <div class="meta-item">
+                  <i class="far fa-heart"></i>
+                  <span>{{ recipe.likesCount || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noRecipes>
+          <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-5 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/>
+            </svg>
+            <h3>No recipes yet</h3>
+            <p>This author hasn't shared any recipes.</p>
+          </div>
+        </ng-template>
+      </section>
+    </div>
+
+    <ng-template #noAuthor>
+      <div class="not-found-state">
+        <h2>Author not found</h2>
+        <p>The requested profile could not be loaded.</p>
+        <button class="back-btn" (click)="onBack()" type="button">Go Back</button>
+      </div>
+    </ng-template>
+  </ng-template>
+</div>

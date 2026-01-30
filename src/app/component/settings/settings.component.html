@@ -1,0 +1,65 @@
+<div class="settings-container">
+  <div class="tab-header">
+    <h2>Account Settings</h2>
+  </div>
+
+  <div class="settings-sections">
+    <!-- Change Password Section -->
+    <div class="settings-section">
+      <h3>Change Password</h3>
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="settings-form">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" formControlName="currentPassword" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" formControlName="newPassword" class="form-input">
+          <div class="error" *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+            Password must be at least 6 characters
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-input">
+          <div class="error" *ngIf="passwordForm.get('confirmPassword')?.hasError('passwordMismatch')">
+            Passwords do not match
+          </div>
+        </div>
+        <button type="submit" class="save-btn" [disabled]="passwordForm.invalid || isUpdatingPassword">
+          <span *ngIf="isUpdatingPassword" class="spinner"></span>
+          {{ isUpdatingPassword ? 'Updating...' : 'Change Password' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Danger Zone Section -->
+    <div class="settings-section danger-zone">
+      <h3>Danger Zone</h3>
+      <div class="danger-item">
+        <div class="danger-content">
+          <h4>Delete Account</h4>
+          <p>Permanently delete your account and all associated data</p>
+        </div>
+        <button class="delete-btn" (click)="confirmDeleteAccount()">
+          Delete Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteModal">
+  <div class="modal-container">
+    <h3>Delete Your Account?</h3>
+    <p>This action cannot be undone. All your recipes and data will be permanently deleted.</p>
+    <div class="modal-actions">
+      <button class="cancel-btn" (click)="showDeleteModal = false">Cancel</button>
+      <button class="delete-btn" (click)="deleteAccount()" [disabled]="isDeleting">
+        <span *ngIf="isDeleting" class="spinner"></span>
+        {{ isDeleting ? 'Deleting...' : 'Delete Account' }}
+      </button>
+    </div>
+  </div>
+</div>

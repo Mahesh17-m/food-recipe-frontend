@@ -1,0 +1,252 @@
+<div class="recipe-detail-wrapper">
+  <!-- Back Button -->
+  <div class="back-nav">
+    <button class="back-btn" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i>
+      Back
+    </button>
+  </div>
+  
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading recipe...</p>
+    </div>
+  </div>
+  
+  <div *ngIf="!isLoading && recipe" class="recipe-detail-container">
+    <!-- Main Content Grid -->
+    <div class="main-content-grid">
+      <!-- Left Column: Image -->
+      <div class="left-column">
+        <div class="recipe-image-large">
+          <img [src]="getSafeImageUrl(recipe.imageUrl)"
+               [alt]="recipe.title"
+               (error)="handleImageError($event)"
+               class="main-image-large">
+          <!-- REMOVED: image-badge div -->
+        </div>
+      </div>
+      
+      <!-- Right Column: Content -->
+      <div class="right-column">
+        <!-- Title and Meta - UPDATED: Title first, then description, category moved to meta -->
+        <div class="title-meta-section">
+          <h1 class="recipe-title">{{ recipe.title }}</h1>
+          <!-- Description after title -->
+          <p class="recipe-description" *ngIf="recipe.description">{{ recipe.description }}</p>
+          
+          <!-- Recipe Meta - UPDATED: Added category between time and serving -->
+          <div class="recipe-meta">
+            <div class="meta-item">
+              <i class="bi bi-clock meta-icon"></i>
+              <span class="meta-value">{{ recipe.cookTime || 25 }} min</span>
+              <span class="meta-label">Cooking Time</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-tag meta-icon"></i>
+              <span class="meta-value">{{ recipe.category || 'Non-Vegetarian' }}</span>
+              <span class="meta-label">Category</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-people meta-icon"></i>
+              <span class="meta-value">Serves {{ recipe.servings || 12 }}</span>
+              <span class="meta-label">Serving</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-person-check meta-icon"></i>
+              <span class="meta-value">{{ recipe.difficulty || 'Easy' }}</span>
+              <span class="meta-label">Degree of Difficulty</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Author Section - UPDATED: Added follow button in action buttons -->
+        <div class="author-section">
+          <div class="author-info clickable" (click)="navigateToAuthorProfile()">
+            <div class="author-avatar">
+              <img [src]="authService.getFullProfileImageUrl(author?.profilePicture)"
+                   [alt]="author?.username || 'Unknown Chef'"
+                   (error)="handleUserImageError($event)">
+            </div>
+            <div class="author-details">
+              <h3 class="author-name">{{ author?.username || 'Chandu' }}</h3>
+              <p class="author-role">Recipe Author</p>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <!-- ADDED: Follow button -->
+            <button *ngIf="showFollowButton && (isLoggedIn$ | async) && !isFollowingAuthor" 
+                    class="action-btn follow-btn"
+                    (click)="toggleFollow(); $event.stopPropagation()">
+              <i class="bi bi-person-plus"></i>
+              Follow
+            </button>
+            <button *ngIf="showFollowButton && (isLoggedIn$ | async) && isFollowingAuthor" 
+                    class="action-btn follow-btn following"
+                    (click)="toggleFollow(); $event.stopPropagation()">
+              <i class="bi bi-person-check"></i>
+              Following
+            </button>
+            
+            <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite(); $event.stopPropagation()">
+              <i class="bi" [ngClass]="isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+            </button>
+            <button class="action-btn" [class.active]="isSaved" (click)="toggleSave(); $event.stopPropagation()">
+              <i class="bi" [ngClass]="isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'"></i>
+            </button>
+            <button class="action-btn" (click)="shareRecipe('copy'); $event.stopPropagation()">
+              <i class="bi bi-share"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Ingredients Section - REVERTED: Two-column grid with checkboxes in amounts column -->
+        <div class="ingredients-section">
+          <div class="section-header">
+            <h2>Ingredients {{ servingSize }} Person{{ servingSize > 1 ? 's' : '' }}</h2>
+            <div class="servings-control">
+              <button (click)="adjustServings(-1)" [disabled]="servingSize <= 1" class="serving-btn">-</button>
+              <span class="serving-count">{{ servingSize }}</span>
+              <button (click)="adjustServings(1)" class="serving-btn">+</button>
+            </div>
+          </div>
+          <div class="ingredients-grid">
+            <div class="ingredients-column amounts">
+              <div *ngFor="let ingredient of getAdjustedIngredients(); let i = index" class="ingredient-amount-cell">
+                <input type="checkbox" id="ingredient-{{ i }}" class="ingredient-checkbox" (change)="onIngredientToggle(i)">
+                <label for="ingredient-{{ i }}" class="amount-label">{{ ingredient.adjustedAmount }}</label>
+              </div>
+            </div>
+            <div class="ingredients-column names">
+              <div *ngFor="let ingredient of getAdjustedIngredients(); let i = index" class="ingredient-name-cell">
+                <span class="ingredient-name">{{ ingredient.name }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Directions and Similar Recipes Row - UPDATED: Simple list for directions with instruction.text -->
+    <div class="directions-similar-row">
+      <!-- Left: Directions simple list -->
+      <div class="directions-section">
+        <h2 class="directions-title">Cooking Instructions</h2>
+        <div class="directions-content">
+          <div *ngFor="let instruction of recipe.instructions; let i = index" class="instruction-step">
+            <div class="step-item">
+              <i class="bi bi-check-circle-fill step-icon"></i>
+              <span class="step-title">Step {{ i + 1 }}: {{ instruction.text }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right: Similar Recipes -->
+      <div class="similar-recipes-section">
+        <h2 class="similar-title">Similar Recipes</h2>
+        <div class="similar-grid">
+          <div *ngFor="let similarRecipe of similarRecipes; let j = index" class="similar-card" (click)="router.navigate(['/recipes', similarRecipe._id])">
+            <img [src]="getSafeImageUrl(similarRecipe.imageUrl)" [alt]="similarRecipe.title" class="similar-image">
+            <div class="similar-info">
+              <h3 class="similar-name">{{ similarRecipe.title }}</h3>
+              <div class="similar-rating">
+                <span *ngFor="let star of [1,2,3,4,5]; let k = index" [class.filled]="k < (similarRecipe.rating || 4)">★</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Section: Nutrition and Reviews -->
+    <div class="bottom-section">
+      <!-- Nutrition -->
+      <div class="nutrition-section">
+        <h3 class="nutrition-title">Nutrition Information</h3>
+        <div class="nutrition-grid" *ngIf="recipe.nutrition">
+          <div class="nutrition-item">
+            <span class="nutrition-value">{{ recipe.nutrition.calories }}</span>
+            <span class="nutrition-label">Calories</span>
+          </div>
+          <div class="nutrition-item">
+            <span class="nutrition-value">{{ recipe.nutrition.protein }}g</span>
+            <span class="nutrition-label">Protein</span>
+          </div>
+          <div class="nutrition-item">
+            <span class="nutrition-value">{{ recipe.nutrition.carbs }}g</span>
+            <span class="nutrition-label">Carbs</span>
+          </div>
+          <div class="nutrition-item">
+            <span class="nutrition-value">{{ recipe.nutrition.fat }}g</span>
+            <span class="nutrition-label">Fat</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Reviews - UPDATED: Added "Add Review" button -->
+      <div class="reviews-section">
+        <div class="reviews-header">
+          <h3 class="reviews-title">Reviews & Ratings</h3>
+          <!-- ADDED: Add Review button -->
+          <button class="add-review-btn" *ngIf="isLoggedIn$ | async" (click)="showReviewForm = !showReviewForm">
+            {{ showReviewForm ? 'Cancel' : '+ Add Review' }}
+          </button>
+        </div>
+        
+        <!-- Review Form - UPDATED: Moved outside conditional -->
+        <form *ngIf="showReviewForm" [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="review-form">
+          <div class="rating-section">
+            <label>Your Rating</label>
+            <div class="stars">
+              <span *ngFor="let star of [1,2,3,4,5]"
+                    (click)="reviewForm.patchValue({rating: star})"
+                    [class.active]="star <= reviewForm.get('rating')?.value">
+                ★
+              </span>
+            </div>
+          </div>
+          <div class="comment-section">
+            <textarea formControlName="comment" placeholder="Share your experience..."></textarea>
+            <div class="error" *ngIf="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched">
+              Comment must be between 10 and 500 characters
+            </div>
+          </div>
+          <button type="submit" class="submit-btn" [disabled]="reviewForm.invalid">
+            Submit Review
+          </button>
+        </form>
+        
+        <div class="reviews-list" *ngIf="reviews.length > 0; else noReviews">
+          <div *ngFor="let review of reviews" class="review-item">
+            <div class="review-header">
+              <div class="reviewer-avatar">
+                <img [src]="authService.getFullProfileImageUrl(review.author.profilePicture)"
+                     [alt]="review.author.username"
+                     (error)="handleUserImageError($event)">
+              </div>
+              <div class="reviewer-details">
+                <h4>{{ review.author.username }}</h4>
+                <div class="review-rating">
+                  <span *ngFor="let star of [1,2,3,4,5]" [class.filled]="star <= review.rating">★</span>
+                </div>
+              </div>
+              <span class="review-date">{{ review.createdAt | date:'MMM d, y' }}</span>
+              <button *ngIf="isOwnReview(review)" class="delete-btn" (click)="deleteReview(review._id)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <p class="review-comment">{{ review.comment }}</p>
+          </div>
+        </div>
+        <ng-template #noReviews>
+          <div class="no-reviews">
+            <i class="bi bi-chat-square-text"></i>
+            <p>No reviews yet. Be the first!</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

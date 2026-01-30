@@ -1,0 +1,51 @@
+<div class="favorites-container">
+  <div class="tab-header">
+    <h2>Favorite Recipes</h2>
+  </div>
+
+  <ng-container *ngIf="isLoading; else content">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading your favorites...</p>
+    </div>
+  </ng-container>
+
+  <ng-template #content>
+    <ng-container *ngIf="recipes.length > 0; else noFavorites">
+      <div class="recipes-grid">
+        <div class="recipe-card" *ngFor="let recipe of recipes; trackBy: trackByRecipeId">
+          <div class="card-image">
+            <img [src]="recipe.imageUrl || 'assets/recipe-placeholder.jpg'" 
+                 [alt]="recipe.title" 
+                 (error)="handleImageError($event)">
+            <button class="favorite-btn active" (click)="removeFavorite(recipe._id)">
+              <i class="bi bi-heart-fill"></i>
+            </button>
+          </div>
+          <div class="card-content">
+            <h4>{{ recipe.title }}</h4>
+            <p class="recipe-description">{{ (recipe.description || 'No description available') | slice:0:100 }}{{ recipe.description && recipe.description.length > 100 ? '...' : '' }}</p>
+            <div class="recipe-meta">
+              <span><i class="bi bi-clock"></i> {{ (recipe.prepTime || 0) + (recipe.cookTime || 0) }} min</span>
+              <span><i class="bi bi-star-fill"></i> {{ recipe.rating ? (recipe.rating | number:'1.1-1') : 'Not rated' }}</span>
+            </div>
+            <a [routerLink]="['/recipes', recipe._id]" class="view-btn">View Recipe</a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noFavorites>
+      <div class="empty-state">
+        <i class="bi bi-heart"></i>
+        <h4>You haven't favorited any recipes yet</h4>
+        <p>Save your favorite recipes to find them easily later</p>
+        <a routerLink="/recipes" class="browse-btn">Browse Recipes</a>
+      </div>
+    </ng-template>
+  </ng-template>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+  </div>
+</div>

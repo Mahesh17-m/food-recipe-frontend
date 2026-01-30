@@ -1,0 +1,440 @@
+.edit-recipe-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.edit-recipe-container h1 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.click-me {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.click-me:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+form {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Form Row for inline fields */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+/* Ingredients and Instructions Styles */
+.ingredient-row,
+.instruction-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.instruction-row {
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.instruction-row textarea {
+  min-height: 80px;
+}
+
+.ingredient-row input,
+.instruction-row input,
+.instruction-row textarea {
+  border: 1px solid #dee2e6;
+  background: white;
+}
+
+.ingredient-row button,
+.instruction-row button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.ingredient-row button:hover:not(:disabled),
+.instruction-row button:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.ingredient-row button:disabled,
+.instruction-row button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Add buttons */
+.form-group button[type="button"]:not(.ingredient-row button):not(.instruction-row button) {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.form-group button[type="button"]:not(.ingredient-row button):not(.instruction-row button):hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+/* Nutrition Row */
+.nutrition-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.nutrition-row input {
+  text-align: center;
+}
+
+/* Image Upload Styles */
+.image-preview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 300px;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 2px solid #e5e5e5;
+  margin-bottom: 1rem;
+}
+
+.image-preview button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.image-preview button:hover {
+  background: #b91c1c;
+}
+
+.image-placeholder {
+  text-align: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  color: #6c757d;
+  margin-top: 1rem;
+}
+
+/* File Input */
+.form-group input[type="file"] {
+  padding: 0.5rem;
+  border: 2px dashed #dee2e6;
+  background: #f8f9fa;
+}
+
+.form-group input[type="file"]:focus {
+  border-color: #dc2626;
+  background: #fff;
+}
+
+/* Error Messages */
+.error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.error span {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.submit-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Loading Spinner in Button */
+.submit-btn .spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .edit-recipe-container {
+    padding: 1rem;
+  }
+
+  .edit-recipe-container h1 {
+    font-size: 2rem;
+  }
+
+  form {
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .ingredient-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .ingredient-row button {
+    width: 100%;
+  }
+
+  .nutrition-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .image-preview img {
+    max-width: 100%;
+  }
+
+  .click-me {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-recipe-container {
+    padding: 0.5rem;
+  }
+
+  form {
+    padding: 1rem;
+  }
+
+  .nutrition-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .ingredient-row,
+  .instruction-row {
+    padding: 0.75rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.form-group input:focus-visible,
+.form-group textarea:focus-visible,
+.form-group select:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Custom Select Styling */
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem;
+  padding-right: 2.5rem;
+}
+
+/* Scrollbar Styling for Textareas */
+.form-group textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-group textarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.form-group textarea::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.form-group textarea::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Success State for Valid Fields */
+.form-group input:valid:not(:focus):not(:placeholder-shown),
+.form-group textarea:valid:not(:focus):not(:placeholder-shown),
+.form-group select:valid:not(:focus) {
+  border-color: #28a745;
+}
+
+/* Invalid State for Touched Fields */
+.form-group input.ng-invalid.ng-touched,
+.form-group textarea.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-touched {
+  border-color: #dc2626;
+}
+
+/* Animation for Dynamic Content */
+.ingredient-row,
+.instruction-row {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .edit-recipe-container {
+    background: white;
+    padding: 0;
+  }
+  
+  .click-me,
+  .submit-btn,
+  input[type="file"] {
+    display: none;
+  }
+  
+  form {
+    box-shadow: none;
+    padding: 0;
+  }
+}

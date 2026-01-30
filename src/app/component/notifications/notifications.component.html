@@ -1,0 +1,202 @@
+<div class="notifications-page">
+  <div class="notifications-container">
+    <!-- Left Side: Food Theme -->
+    <div class="food-theme-side">
+      <div class="theme-content">
+        <!-- Animated Cooking Scene (Sketch/Art Style) -->
+        <div class="cooking-scene">
+          <div class="sketch-art">
+            <!-- Chef Sketch -->
+            <div class="chef-sketch">
+              <div class="chef-head"></div>
+              <div class="chef-body"></div>
+              <div class="chef-hat"></div>
+              <div class="chef-apron"></div>
+            </div>
+            
+            <!-- Cooking Pan -->
+            <div class="sketch-pan">
+              <div class="pan-handle"></div>
+              <div class="pan-body"></div>
+              <div class="sizzle-lines"></div>
+            </div>
+            
+            <!-- Floating Ingredients (sketch style) -->
+            <div class="sketch-ingredients">
+              <div class="ingredient veggie1"></div>
+              <div class="ingredient veggie2"></div>
+              <div class="ingredient veggie3"></div>
+              <div class="ingredient herb1"></div>
+            </div>
+            
+            <!-- Steam Animation -->
+            <div class="steam-animation">
+              <div class="steam steam1"></div>
+              <div class="steam steam2"></div>
+              <div class="steam steam3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Theme Quote -->
+        <div class="theme-quote">
+          <div class="quote-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32">
+              <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
+            </svg>
+          </div>
+          <p>"Good food is the foundation of genuine happiness."</p>
+          <span class="quote-author">- Auguste Escoffier</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side: Notifications -->
+    <div class="notifications-side">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Your Notifications</h1>
+        <button class="clear-all-btn" (click)="clearAllNotifications()" *ngIf="filteredNotifications.length > 0">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+          Clear all
+        </button>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <div *ngFor="let filter of filters" 
+             class="filter-tab" 
+             [class.active]="selectedFilter === filter.id"
+             (click)="onFilterChange(filter.id)">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path [attr.d]="filter.icon"/>
+          </svg>
+          <span>{{ filter.name }}</span>
+          <span class="filter-count" *ngIf="getFilterCount(filter.id) > 0">
+            {{ getFilterCount(filter.id) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="loading-spinner-large"></div>
+        <p>Loading your notifications...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredNotifications.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="80" height="80">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+          </svg>
+        </div>
+        <h3>No notifications found</h3>
+        <p *ngIf="selectedFilter === 'all'">You're all caught up! New notifications will appear here.</p>
+        <p *ngIf="selectedFilter === 'unread'">No unread notifications</p>
+        <p *ngIf="selectedFilter === 'recipe'">No recipe notifications</p>
+        <p *ngIf="selectedFilter === 'social'">No social notifications</p>
+        <button *ngIf="selectedFilter !== 'all'" class="show-all-btn" (click)="onFilterChange('all')">
+          Show All Notifications
+        </button>
+      </div>
+
+      <!-- Notifications List - UPDATED LAYOUT -->
+      <div class="notifications-list" *ngIf="!isLoading && filteredNotifications.length > 0">
+        <div *ngFor="let notification of filteredNotifications; trackBy: trackNotificationById" 
+             class="notification-card" 
+             [class.unread]="!notification.read"
+             (click)="handleNotificationClick(notification)">
+          
+          <!-- Top Row: Icon, Title, Category, Time, Actions -->
+          <div class="notification-top-row">
+            <div class="notification-icon-title">
+              <div class="notification-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" [attr.fill]="getNotificationColor(notification.type)">
+                  <path [attr.d]="getNotificationIcon(notification.type)"/>
+                </svg>
+              </div>
+              
+              <div class="notification-header">
+                <div class="notification-title">{{ notification.title }}</div>
+                <div class="notification-category">{{ getNotificationCategory(notification.type) }}</div>
+              </div>
+            </div>
+            
+            <!-- Time and Actions -->
+            <div class="notification-time-actions">
+              <div class="notification-time">{{ formatTime(notification.createdAt) }}</div>
+              
+              <div class="notification-actions">
+                <button class="action-btn delete-btn" 
+                        (click)="deleteNotification(notification._id, $event)"
+                        title="Delete notification">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                </button>
+                <div class="unread-dot" *ngIf="!notification.read"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Bottom Row: Message and Sender/Recipe Info SIDE BY SIDE -->
+           <div class="notification-bottom-row">
+      <p class="notification-message">{{ notification.message }}</p>
+      
+      <!-- Sender and Recipe Info -->
+      <div class="notification-meta-side">
+        <!-- Sender Info - Clickable to navigate to author profile -->
+      <div class="sender-info" *ngIf="notification.sender" 
+     (click)="navigateToSenderProfile(notification.sender._id, $event)">
+  <div class="sender-avatar-container">
+    <img *ngIf="notification.sender.profilePicture" 
+         [src]="getProfilePicture(notification.sender.profilePicture)" 
+         alt="{{ notification.sender.username }}"
+         class="sender-avatar"
+         onerror="this.src='assets/images/default-avatar.png'">
+    <div class="avatar-placeholder" *ngIf="!notification.sender.profilePicture">
+      {{ (notification.sender.name || notification.sender.username).charAt(0).toUpperCase() }}
+    </div>
+  </div>
+  <span class="sender-name">{{ notification.sender.name || notification.sender.username }}</span>
+</div>
+        
+        <!-- Recipe Info -->
+        <div class="recipe-info" *ngIf="notification.recipe" 
+             (click)="navigateToRecipe(notification.recipe._id, $event)">
+          <svg viewBox="0 0 24 24" width="14" height="14" class="recipe-icon">
+            <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/>
+          </svg>
+          <span class="recipe-title">{{ notification.recipe.title }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1 && !isLoading && filteredNotifications.length > 0">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+          </svg>
+          Previous
+        </button>
+        
+        <div class="page-numbers">
+          <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+        </div>
+        
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          Next
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

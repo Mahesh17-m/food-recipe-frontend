@@ -1,0 +1,102 @@
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      
+      <!-- Column 1: Brand & Social -->
+      <div class="footer-col">
+        <h3 class="footer-logo">Make The Taste.</h3>
+        <p class="footer-description">
+          Discover and share delicious recipes from around the world.
+        </p>
+        
+        <div class="social-icons">
+          <a href="#" class="social-icon" aria-label="Facebook">
+            <i class="bi bi-facebook"></i>
+          </a>
+          <a href="#" class="social-icon" aria-label="Instagram">
+            <i class="bi bi-instagram"></i>
+          </a>
+          <a href="#" class="social-icon" aria-label="Twitter">
+            <i class="bi bi-twitter-x"></i>
+          </a>
+          <a href="#" class="social-icon" aria-label="Pinterest">
+            <i class="bi bi-pinterest"></i>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Column 2: Quick Links -->
+      <div class="footer-col">
+        <h5 class="footer-title">Quick Links</h5>
+        <ul class="footer-links">
+          <li><a routerLink="/" class="footer-link">Home</a></li>
+          <li><a routerLink="/recipes" class="footer-link">Recipes</a></li>
+          <li><a routerLink="/categories" class="footer-link">Categories</a></li>
+          <li><a routerLink="/chefs" class="footer-link">Featured Chefs</a></li>
+          <li><a routerLink="/about" class="footer-link">About Us</a></li>
+          <li><a routerLink="/contact" class="footer-link">Contact</a></li>
+        </ul>
+      </div>
+      
+      <!-- Column 3: Categories -->
+      <div class="footer-col">
+        <h5 class="footer-title">Categories</h5>
+        <ul class="footer-links">
+           <li><a [routerLink]="['/recipes']" [queryParams]="{category: 'Breakfast'}" class="footer-link">Breakfast</a></li>
+          <li><a [routerLink]="['/recipes']" [queryParams]="{category: 'Lunch'}" class="footer-link">Lunch</a></li>
+          <li><a [routerLink]="['/recipes']" [queryParams]="{category: 'Dinner'}" class="footer-link">Dinner</a></li>
+          <li><a [routerLink]="['/recipes']" [queryParams]="{category: 'Desserts'}" class="footer-link">Desserts</a></li>
+          <li><a [routerLink]="['/recipes']" [queryParams]="{category: 'Vegetarian'}" class="footer-link">Vegetarian</a></li>
+          <li><a [routerLink]="['/recipes']" [queryParams]="{category: 'Quick Meals'}" class="footer-link">Quick Meals</a></li>
+        </ul>
+      </div>
+      
+      <!-- Column 4: Newsletter -->
+      <div class="footer-col">
+        <h5 class="footer-title">Stay Updated</h5>
+        <p class="newsletter-text">
+          Subscribe for weekly recipes, cooking tips, and culinary inspiration.
+        </p>
+        
+        <form class="newsletter-form">
+          <input 
+            type="email" 
+            class="newsletter-input" 
+            placeholder="Your email" 
+            required
+            aria-label="Email for newsletter"
+          >
+          <button type="submit" class="newsletter-btn">
+            <i class="bi bi-send"></i>
+          </button>
+        </form>
+        
+        <p class="privacy-text">
+          We respect your privacy. Unsubscribe at any time.
+        </p>
+        
+        <div class="contact-info">
+          <div class="contact-item">
+            <i class="bi bi-envelope"></i>
+            <span>hello&#64;makethetaste.com</span>
+          </div>
+          <div class="contact-item">
+            <i class="bi bi-telephone"></i>
+            <span>+1 (555) 123-4567</span>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p class="copyright">&copy; {{ currentYear }} Make The Taste. All rights reserved.</p>
+      <div class="legal-links">
+        <a routerLink="/privacy" class="legal-link">Privacy Policy</a>
+        <a routerLink="/terms" class="legal-link">Terms of Service</a>
+        <a routerLink="/cookies" class="legal-link">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,102 @@
+<div class="chefs-container">
+  <div class="chefs-header">
+    <h1 class="header-title">Our Talented Chefs</h1>
+    <p class="header-subtitle">Discover the amazing people behind our delicious recipes</p>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading our amazing chefs...</p>
+    </div>
+  }
+
+  <!-- Chefs Grid -->
+  @if (!isLoading && chefs.length > 0) {
+    <div class="chefs-grid">
+      @for (chef of chefs; track chef._id; let i = $index) {
+        <div class="chef-card" 
+             [style.animation-delay]="(i * 0.1) + 's'"
+             (click)="viewChefProfile(chef._id)">
+          
+          <!-- Chef Image with Hover Effect -->
+          <div class="chef-image-container">
+            <div class="chef-image">
+              <img [src]="getChefImage(chef.profilePicture)" 
+                   [alt]="chef.username"
+                   (error)="handleImageError($event)">
+              <div class="image-overlay">
+                <i class="bi bi-eye"></i>
+                <span>View Profile</span>
+              </div>
+            </div>
+            
+            <!-- Verification Badge -->
+            @if (chef.isVerified) {
+              <div class="verification-badge">
+                <i class="bi bi-patch-check-fill"></i>
+              </div>
+            }
+            
+            <!-- Recipe Count Badge -->
+            <div class="recipe-count-badge">
+              <i class="bi bi-journal-text"></i>
+              {{chef.recipesCount || 0}}
+            </div>
+          </div>
+
+          <!-- Chef Info -->
+          <div class="chef-info">
+            <div class chef-name-section>
+              <h3 class="chef-name">{{chef.username}}</h3>
+              @if (chef.isVerified) {
+                <i class="bi bi-patch-check verified-icon"></i>
+              }
+            </div>
+            
+            <p class="chef-specialty">{{getUserSpecialty(chef)}}</p>
+            
+            <!-- Chef Stats -->
+            <div class="chef-stats">
+              <div class="stat">
+                <i class="bi bi-journal-text"></i>
+                <span>{{chef.recipesCount || 0}} Recipes</span>
+              </div>
+              <div class="stat">
+                <i class="bi bi-people"></i>
+                <span>{{chef.followersCount || 0}} Followers</span>
+              </div>
+            </div>
+
+            <!-- Chef Bio -->
+            @if (chef.bio) {
+              <p class="chef-bio">{{truncateBio(chef.bio)}}</p>
+            }
+
+            <!-- Join Date -->
+            <div class="join-date">
+              <i class="bi bi-calendar3"></i>
+              Joined {{getJoinDate(chef.createdAt)}}
+            </div>
+          </div>
+
+          <!-- Hover Card Effect -->
+          <div class="card-hover-effect"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && chefs.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <h3>No Chefs Found</h3>
+      <p>Be the first to join our community of amazing chefs!</p>
+      <button class="btn-primary" routerLink="/register">Join Now</button>
+    </div>
+  }
+</div>

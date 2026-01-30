@@ -1,0 +1,191 @@
+<nav class="navbar">
+  <div class="container">
+    <!-- Brand Logo & Title - Left Side -->
+    <a routerLink="/" class="navbar-brand">
+      <div class="brand-content">
+        <div class="logo-container">
+          <img src="assets/logo.png" alt="Food Recipe App Logo" class="logo" onerror="this.style.display='none'">
+          <h1 class="app-title">
+            <span class="typewriter-food">Make The Taste</span>
+          </h1>
+        </div>
+      </div>
+    </a>
+
+    <!-- Search Bar - Center (Desktop Only) -->
+    <div class="search-section">
+      <div class="search-bar" [class.active]="searchActive">
+        <div class="search-input-container">
+          <i class="search-icon fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Search recipes..." 
+            aria-label="Search recipes"
+            [(ngModel)]="searchQuery"
+            (focus)="activateSearch()"
+            (blur)="deactivateSearch()"
+            (input)="onSearchInput()"
+            (keyup.enter)="searchRecipes()">
+          <button class="search-btn" aria-label="Search" (click)="searchRecipes()">
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+        <div class="search-suggestions" *ngIf="showSuggestions && searchQuery">
+          <div class="suggestion-item" *ngFor="let suggestion of filteredSuggestions" (click)="selectSuggestion(suggestion)">
+            <i class="suggestion-icon fas fa-search"></i>
+            <span>{{suggestion}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navbar Links - Right Side -->
+    <div class="nav-section">
+      <!-- Mobile Menu Toggle Button -->
+      <button class="menu-toggle" (click)="toggleMenu()" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </button>
+      
+      <ul class="navbar-links" [class.active]="menuOpen">
+        <!-- Home Link -->
+        <li class="nav-item">
+          <a routerLink="/" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <i class="nav-icon fas fa-home"></i>
+            <span class="nav-text">Home</span>
+          </a>
+        </li>
+        
+        <!-- Recipes Link -->
+        <li class="nav-item">
+          <a routerLink="/recipes" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <i class="nav-icon fas fa-utensils"></i>
+            <span class="nav-text">Recipes</span>
+          </a>
+        </li>
+        
+       <!-- Notification Dropdown Section -->
+<li class="nav-item notification-item">
+  <div *ngIf="isLoggedIn" class="notifications-dropdown">
+    <!-- Notification Bell -->
+    <div class="nav-notification-bell">
+      <div class="bell-container" (click)="toggleNotificationDropdown()">
+        <svg class="bell-icon" viewBox="0 0 24 24">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
+        <div class="notification-indicator" *ngIf="notificationUnreadCount > 0">
+          <span class="count">{{ notificationUnreadCount > 99 ? '99+' : notificationUnreadCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dropdown Panel -->
+    <div class="notifications-panel" [class.open]="showNotificationDropdown">
+      <div class="panel-header">
+        <h3>Notifications</h3>
+        <div class="header-actions">
+          <button class="action-btn" (click)="markAllNotificationsAsRead()" *ngIf="notificationUnreadCount > 0" title="Mark all as read">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </button>
+          <button class="action-btn" (click)="viewAllNotifications()" title="View all notifications">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div *ngIf="notificationLoading" class="loading-state">
+          <div class="loading-spinner"></div>
+        </div>
+
+        <div *ngIf="!notificationLoading && recentNotifications.length === 0" class="empty-state">
+          <svg viewBox="0 0 24 24" width="48" height="48">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+          </svg>
+          <p>No notifications</p>
+        </div>
+
+        <div class="notifications-list" *ngIf="!notificationLoading && recentNotifications.length > 0">
+          <div *ngFor="let notification of recentNotifications" 
+               class="notification-item" 
+               [class.unread]="!notification.read"
+               (click)="handleNotificationClick(notification)">
+            
+            <div class="notification-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" [attr.fill]="getNotificationColor(notification.type)">
+                <path [attr.d]="getNotificationIcon(notification.type)"/>
+              </svg>
+            </div>
+            
+            <div class="notification-content">
+              <div class="notification-title">{{ notification.title }}</div>
+              <div class="notification-message">{{ notification.message }}</div>
+              <div class="notification-time">{{ formatNotificationTime(notification.createdAt) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-footer" *ngIf="!notificationLoading && recentNotifications.length > 0">
+          <button class="view-all-btn" (click)="viewAllNotifications()">
+            View All Notifications
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop -->
+    <div class="notifications-backdrop" *ngIf="showNotificationDropdown" (click)="closeNotificationDropdown()"></div>
+  </div>
+</li>
+
+        <!-- Show Profile Link if Logged In -->
+        <ng-container *ngIf="isLoggedIn; else loggedOut">
+          <li class="nav-item profile-item">
+            <div class="profile-menu" [class.show]="showDropdown">
+              <button class="profile-trigger" (click)="toggleProfileDropdown()">
+                <div class="profile-avatar">
+                  <img [src]="getProfileImageUrl(currentUser?.profilePicture)" 
+                       alt="User profile" 
+                       class="profile-pic"
+                       (error)="handleImageError($event)">
+                  <div class="online-indicator"></div>
+                </div>
+                <i class="dropdown-arrow fas fa-chevron-down" [class.rotated]="showDropdown"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a routerLink="/profile" class="dropdown-item" (click)="hideDropdown(); closeMenu()">
+                  <i class="dropdown-icon fas fa-user"></i>
+                  <span class="dropdown-text">Profile</span>
+                </a>
+                <a routerLink="/add-recipe" class="dropdown-item" (click)="hideDropdown(); closeMenu()">
+                  <i class="nav-icon fas fa-utensils"></i>
+                  <span class="dropdown-text">Add New Recipe</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item logout-item" (click)="logout(); closeMenu()">
+                  <i class="dropdown-icon fas fa-sign-out-alt"></i>
+                  <span class="dropdown-text">Logout</span>
+                </a>
+              </div>
+            </div>
+          </li>
+        </ng-container>
+
+        <!-- Show Login/Signup if Logged Out -->
+        <ng-template #loggedOut>
+          <li class="nav-item">
+            <a routerLink="/auth" routerLinkActive="active" class="nav-link auth-link" (click)="closeMenu()">
+              <i class="nav-icon fas fa-user-plus"></i>
+              <span class="nav-text">Login</span>
+            </a>
+          </li>
+        </ng-template>
+      </ul>
+    </div>
+  </div>
+</nav>
