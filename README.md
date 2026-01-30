@@ -705,39 +705,43 @@ $breakpoints: (
 ## 📸 Screenshots & Demo
 
 ### 🏠 Home Page
-![Home Page](/assets/screens/home-page.png)
+![Home Page](\assets\screens\home-page.png)
 *Modern, responsive home page with featured recipes and search functionality*
 
 ### 🍳 Recipe Details
-![Recipe Details](/assets/screens/recipe-details.png)
+![Recipe Details](\assets\screens\recipe-details.png)
 *Interactive recipe page with ingredients, instructions, and cooking timer*
 
 ### 🔍 Recipes View Page
-![Recipe Search](/assets/screens/recipe-search.png)
+![Recipe Search](\assets\screens\recipe-search.png)
 *Advanced search with filters for categories, cooking time, and difficulty*
 
 ### 🤖 AI Cooking Assistant
-![AI Assistant](/assets/screens/ai-chatbot.png)
+![AI Assistant](\assets\screens\ai-chatbot.png)
+*Interactive AI chat for cooking tips and recipe suggestions*
+### 🤖 AI Cooking Assistant
+![AI Assistant](\assets\screens\ai-assistant.png)
 *Interactive AI chat for cooking tips and recipe suggestions*
 
+
 ### 👤 User Dashboard
-![User Dashboard](/assets/screens/user-dashboard.png)
+![User Dashboard](\assets\screens\user-dashboard.png)
 *Personal dashboard with saved recipes and cooking history*
 
 ### 👨‍🍳 Chefs Page
-![Chefs Section](/assets/screens/chefs-page.png)
+![Chefs Section](\assets\screens\chefs-page.png)
 *Browse professional chefs and their specialties*
 
 ### 🎨 Chef Profile Page
-![Chef Profile](/assets/screens/chef-profile.png)
+![Chef Profile](\assets\screens\chef-profile.png)
 *Detailed chef profile with recipes and ratings*
 
 ### 📝 Recipe Adding Form
-![Recipe Adding Form](/assets/screens/recipe-add-form.png)
+![Recipe Adding Form](\assets\screens\recipe-add-form.png)
 *User-friendly form to add new recipes*
 
 ### 🔔 Notification Page
-![Notification Page](/assets/screens/notification-page.png)
+![Notification Page](\assets\screens\notification-page.png)
 *User notifications and alerts*
 
 
