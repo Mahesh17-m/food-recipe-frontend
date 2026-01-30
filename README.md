@@ -1,10 +1,3 @@
-I found the issue! The problem is with **inconsistent markdown formatting** and **missing image files**. Let me fix the README and add a troubleshooting section.
-
-## **🔧 Fixed README with Proper Image Formatting:**
-
-Here's the corrected version with proper image syntax:
-
-```markdown
 # 🍳 Food Recipe Website - Frontend (Angular)
 
 ## 📋 Table of Contents
@@ -394,37 +387,6 @@ dist/food-recipe-frontend/
 
 ---
 
-## 📸 Screenshots & Demo
-
-### 🏠 Home Page
-/assets/screens/home-page.png
-
-### 🍳 Recipe Details
-/assets/screens/recipe-details.png
-
-### 🔍 Recipes View Page
-/assets/screens/recipe-search.png
-
-### 🤖 AI Cooking Assistant
-D:\FOODRECIPEAPP\public\assets\screens\ai-chatbot.png
-
-### 👤 User Dashboard
-/assets/screens/user-dashboard.png
-
-### 👨‍🍳 Chefs Page
-/assets/screens/chefs-page.png
-
-### 🎨 Chef Profile Page
-/assets/screens/chef-profile.png
-
-### 📝 Recipe Adding Form
-/assets/screens/recipe-add-form.png
-
-### 🔔 Notification Page
-/assets/screens/notification-page.png
-
----
-
 ## 🔌 API Integration
 
 ### **API Service Example**
@@ -476,6 +438,363 @@ export class ApiService {
     return this.http.post(`${environment.aiEndpoint}`, { message }, { headers: this.getHeaders() });
   }
 }
+```
+
+### **HTTP Interceptor**
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const token = localStorage.getItem('auth_token');
+    
+    if (token) {
+      req = req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    }
+    
+    return next.handle(req).pipe(
+      catchError(error => {
+        // Handle authentication errors
+        if (error.status === 401) {
+          // Redirect to login or refresh token
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+        }
+        throw error;
+      })
+    );
+  }
+}
+```
+
+---
+
+## 🔐 Authentication
+
+### **Google OAuth Integration**
+```typescript
+import { Injectable } from '@angular/core';
+import { SocialAuthService, GoogleLoginProvider } from '@abacritt/angularx-social-login';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  constructor(private socialAuthService: SocialAuthService) {}
+
+  signInWithGoogle(): Promise<any> {
+    return this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  }
+
+  signOut(): void {
+    this.socialAuthService.signOut();
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('auth_token');
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+}
+```
+
+### **Auth Guard**
+```typescript
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+  constructor(private authService: AuthService, private router: Router) {}
+
+  canActivate(): boolean {
+    if (this.authService.isAuthenticated()) {
+      return true;
+    }
+    
+    this.router.navigate(['/login']);
+    return false;
+  }
+}
+```
+
+---
+
+## 🤖 AI Assistant Integration
+
+### **AI Service**
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
+
+export interface AIMessage {
+  id: string;
+  content: string;
+  sender: 'user' | 'ai';
+  timestamp: Date;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AIService {
+  private aiEndpoint = environment.aiEndpoint;
+  private conversation: AIMessage[] = [];
+  private conversationSubject = new Subject<AIMessage[]>();
+
+  constructor(private http: HttpClient) {}
+
+  sendMessage(message: string): Observable<any> {
+    const userMessage: AIMessage = {
+      id: this.generateId(),
+      content: message,
+      sender: 'user',
+      timestamp: new Date()
+    };
+
+    this.conversation.push(userMessage);
+    this.conversationSubject.next([...this.conversation]);
+
+    return this.http.post(this.aiEndpoint, { message });
+  }
+
+  getRecipeSuggestions(ingredients: string[]): Observable<any> {
+    return this.http.post(`${this.aiEndpoint}/suggest-recipes`, { ingredients });
+  }
+
+  getCookingTips(recipeId: string): Observable<any> {
+    return this.http.get(`${this.aiEndpoint}/tips/${recipeId}`);
+  }
+
+  getConversation(): Observable<AIMessage[]> {
+    return this.conversationSubject.asObservable();
+  }
+
+  clearConversation(): void {
+    this.conversation = [];
+    this.conversationSubject.next([]);
+  }
+
+  private generateId(): string {
+    return Math.random().toString(36).substr(2, 9);
+  }
+}
+```
+
+### **AI Chat Component**
+```typescript
+@Component({
+  selector: 'app-ai-chat',
+  template: `
+    <div class="chat-container">
+      <div class="messages">
+        <div *ngFor="let message of messages" 
+             [class.user]="message.sender === 'user'"
+             [class.ai]="message.sender === 'ai'">
+          {{message.content}}
+        </div>
+      </div>
+      <div class="input-area">
+        <input [(ngModel)]="userInput" 
+               (keyup.enter)="sendMessage()"
+               placeholder="Ask me about cooking...">
+        <button (click)="sendMessage()">Send</button>
+      </div>
+    </div>
+  `
+})
+export class AIChatComponent {
+  messages: AIMessage[] = [];
+  userInput = '';
+
+  constructor(private aiService: AIService) {
+    this.aiService.getConversation().subscribe(messages => {
+      this.messages = messages;
+    });
+  }
+
+  sendMessage(): void {
+    if (!this.userInput.trim()) return;
+
+    this.aiService.sendMessage(this.userInput).subscribe({
+      next: (response) => {
+        const aiMessage: AIMessage = {
+          id: this.generateId(),
+          content: response.message,
+          sender: 'ai',
+          timestamp: new Date()
+        };
+        this.messages.push(aiMessage);
+      },
+      error: (error) => {
+        console.error('AI Error:', error);
+      }
+    });
+
+    this.userInput = '';
+  }
+}
+```
+
+---
+
+## 📱 Responsive Design
+
+### **Breakpoints Configuration**
+```scss
+// styles.scss or variables.scss
+$breakpoints: (
+  'xs': 0,
+  'sm': 576px,
+  'md': 768px,
+  'lg': 992px,
+  'xl': 1200px,
+  'xxl': 1400px
+);
+
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (min-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Unknown breakpoint: #{$breakpoint}";
+  }
+}
+```
+
+### **Responsive Recipe Card**
+```html
+<!-- recipe-card.component.html -->
+<div class="recipe-card" [class.mobile]="isMobile">
+  <img [src]="recipe.image" [alt]="recipe.title" class="recipe-image">
+  <div class="recipe-content">
+    <h3 class="recipe-title">{{recipe.title}}</h3>
+    <div class="recipe-meta">
+      <span class="cook-time">🕐 {{recipe.cookTime}} min</span>
+      <span class="difficulty">⚡ {{recipe.difficulty}}</span>
+    </div>
+    <p class="recipe-description">{{recipe.description | truncate:100}}</p>
+    <div class="recipe-actions">
+      <button (click)="viewRecipe()">View</button>
+      <button (click)="toggleFavorite()">
+        {{isFavorite ? '❤️' : '🤍'}}
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+## 📸 Screenshots & Demo
+
+### 🏠 Home Page
+![Home Page](\assets\screens\home-page.png)
+*Modern, responsive home page with featured recipes and search functionality*
+
+### 🍳 Recipe Details
+![Recipe Details](\assets\screens\recipe-details.png)
+*Interactive recipe page with ingredients, instructions, and cooking timer*
+
+### 🔍 Recipes View Page
+![Recipe Search](.\assets\screens\recipe-search.png)
+*Advanced search with filters for categories, cooking time, and difficulty*
+
+### 🤖 AI Cooking Assistant
+![AI Assistant](.\assets\screens\ai-chatbot.png)
+*Interactive AI chat for cooking tips and recipe suggestions*
+### 🤖 AI Cooking Assistant
+<img width="1820" height="873" alt="Image" src="https://github.com/user-attachments/assets/e87537a3-6d88-4cbe-8d39-ce6ff86cf3d6" />
+*Interactive AI chat for cooking tips and recipe suggestions*
+
+
+### 👤 User Dashboard
+![User Dashboard](\assets\screens\user-dashboard.png)
+*Personal dashboard with saved recipes and cooking history*
+
+### 👨‍🍳 Chefs Page
+![Chefs Section](\assets\screens\chefs-page.png)
+*Browse professional chefs and their specialties*
+
+### 🎨 Chef Profile Page
+![Chef Profile](\assets\screens\chef-profile.png)
+*Detailed chef profile with recipes and ratings*
+
+### 📝 Recipe Adding Form
+![Recipe Adding Form](\assets\screens\recipe-add-form.png)
+*User-friendly form to add new recipes*
+
+### 🔔 Notification Page
+![Notification Page](\assets\screens\notification-page.png)
+*User notifications and alerts*
+
+
+
+## 🧪 Testing
+
+### **Unit Tests**
+```bash
+# Run unit tests
+ng test
+
+# Run with coverage
+ng test --code-coverage
+
+# Watch mode
+ng test --watch
+```
+
+### **E2E Tests**
+```bash
+# Run e2e tests
+ng e2e
+
+# Run specific spec
+ng e2e --specs=./e2e/recipe.e2e-spec.ts
+```
+
+### **Example Test**
+```typescript
+import { TestBed } from '@angular/core/testing';
+import { RecipeService } from './recipe.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+
+describe('RecipeService', () => {
+  let service: RecipeService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [RecipeService]
+    });
+    service = TestBed.inject(RecipeService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+
+  it('should fetch recipes', () => {
+    const recipes = service.getRecipes();
+    expect(recipes).toBeDefined();
+  });
+});
 ```
 
 ---
@@ -561,33 +880,172 @@ npx serve dist/food-recipe-frontend
 
 4. **Click Deploy**
 
+### **Alternative: Deploy to Netlify**
+```toml
+# netlify.toml
+[build]
+  command = "npm run build:prod"
+  publish = "dist/food-recipe-frontend"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
 ---
 
 ## 🐛 Troubleshooting
 
-### **Common Build Errors**
+### **Common Issues & Solutions**
+
+#### **❌ CORS Errors**
+```typescript
+// Update backend CORS to include frontend domain
+app.use(cors({
+  origin: ['https://your-frontend.vercel.app', 'http://localhost:4200'],
+  credentials: true
+}));
+```
+
+#### **❌ Build Errors**
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules package-lock.json
 npm cache clean --force
 npm install
+
+# Check Angular version compatibility
+ng version
+```
+
+#### **❌ Authentication Issues**
+1. Verify Google OAuth client ID
+2. Check redirect URIs in Google Cloud Console
+3. Ensure JWT tokens are properly stored
+
+#### **❌ API Connection Failed**
+```typescript
+// Check environment configuration
+console.log('API URL:', environment.apiUrl);
+// Should be: https://food-recipe-backend-yqx9.onrender.com/api
+```
+
+#### **❌ Memory Issues**
+```json
+// Update package.json
+{
+  "scripts": {
+    "build:prod": "node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng build --configuration production"
+  }
+}
+```
+
+---
+
+## 📊 Performance Optimization
+
+### **Bundle Optimization**
+```bash
+# Analyze bundle
+ng build --stats-json
+npx webpack-bundle-analyzer dist/stats.json
+
+# Lazy loading modules
+const routes: Routes = [
+  {
+    path: 'recipes',
+    loadChildren: () => import('./modules/recipes/recipes.module').then(m => m.RecipesModule)
+  }
+];
+```
+
+### **Image Optimization**
+```html
+<!-- Use lazy loading for images -->
+<img [src]="recipe.image" 
+     [alt]="recipe.title"
+     loading="lazy"
+     width="300"
+     height="200">
+```
+
+---
+
+## 🔐 Security Best Practices
+
+### **Frontend Security**
+1. **Environment Variables:** Never commit secrets
+2. **Content Security Policy:** Implement CSP headers
+3. **XSS Protection:** Sanitize user inputs
+4. **HTTPS Enforcement:** Always use HTTPS in production
+5. **Token Storage:** Use HttpOnly cookies or secure storage
+
+### **Secure HTTP Headers**
+```typescript
+// In server configuration or meta tags
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; script-src 'self' 'unsafe-inline';">
+```
+
+---
+
+## 📈 Monitoring & Analytics
+
+### **Error Tracking**
+```typescript
+// Error handler service
+@Injectable({ providedIn: 'root' })
+export class ErrorHandlerService {
+  handleError(error: any): void {
+    console.error('Application Error:', error);
+    // Send to error tracking service (Sentry, etc.)
+  }
+}
+```
+
+### **Performance Monitoring**
+```typescript
+// Performance tracking
+@NgModule({
+  providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => () => {
+        if (environment.production) {
+          // Initialize analytics
+        }
+      },
+      multi: true
+    }
+  ]
+})
 ```
 
 ---
 
 ## 🤝 Contributing
 
+### **Development Workflow**
 1. Fork the repository
 2. Create feature branch: `git checkout -b feature/amazing-feature`
 3. Commit changes: `git commit -m 'Add amazing feature'`
 4. Push to branch: `git push origin feature/amazing-feature`
 5. Open Pull Request
 
+### **Code Standards**
+- Follow Angular Style Guide
+- Write meaningful commit messages
+- Add tests for new features
+- Update documentation
+
 ---
+
 
 ## 📞 Support & Contact
 
 - **GitHub Issues:** [Report Bugs](https://github.com/Mahesh17-m/food-recipe-frontend/issues)
+- **Documentation:** [Read Docs](https://your-docs-url.com)
 - **Email:** mbmandalapu200217@gmail.com
 
 ---
@@ -598,10 +1056,13 @@ npm install
 - **Google AI** - For Generative AI capabilities
 - **Render** - Backend hosting
 - **Vercel** - Frontend hosting
+- **All Contributors** - For making this project better
 
 ---
 
 ## 🎉 Ready to Deploy!
+
+**Your frontend is ready!** Update the production environment with your backend URL and deploy to Vercel.
 
 **Production Configuration:**
 ```typescript
