@@ -713,11 +713,11 @@ $breakpoints: (
 *Interactive recipe page with ingredients, instructions, and cooking timer*
 
 ### 🔍 Recipes View Page
-![Recipe Search](\assets\screens\recipe-search.png)
+![Recipe Search](.\assets\screens\recipe-search.png)
 *Advanced search with filters for categories, cooking time, and difficulty*
 
 ### 🤖 AI Cooking Assistant
-![AI Assistant](\assets\screens\ai-chatbot.png)
+![AI Assistant](.\assets\screens\ai-chatbot.png)
 *Interactive AI chat for cooking tips and recipe suggestions*
 ### 🤖 AI Cooking Assistant
 ![AI Assistant](\assets\screens\ai-assistant.png)
