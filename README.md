@@ -397,31 +397,31 @@ dist/food-recipe-frontend/
 ## 📸 Screenshots & Demo
 
 ### 🏠 Home Page
-![Home Page](assets/screens/home-page.png)
+/assets/screens/home-page.png
 
 ### 🍳 Recipe Details
-![Recipe Details](assets/screens/recipe-details.png)
+/assets/screens/recipe-details.png
 
 ### 🔍 Recipes View Page
-![Recipe Search](assets/screens/recipe-search.png)
+/assets/screens/recipe-search.png
 
 ### 🤖 AI Cooking Assistant
-![AI Assistant](assets/screens/ai-chatbot.png)
+/assets/screens/ai-chatbot.png
 
 ### 👤 User Dashboard
-![User Dashboard](assets/screens/user-dashboard.png)
+/assets/screens/user-dashboard.png
 
 ### 👨‍🍳 Chefs Page
-![Chefs Section](assets/screens/chefs-page.png)
+/assets/screens/chefs-page.png
 
 ### 🎨 Chef Profile Page
-![Chef Profile](assets/screens/chef-profile.png)
+/assets/screens/chef-profile.png
 
 ### 📝 Recipe Adding Form
-![Recipe Adding Form](assets/screens/recipe-add-form.png)
+/assets/screens/recipe-add-form.png
 
 ### 🔔 Notification Page
-![Notification Page](assets/screens/notification-page.png)
+/assets/screens/notification-page.png
 
 ---
 
