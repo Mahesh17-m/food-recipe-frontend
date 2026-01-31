@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpEventType, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, switchMap, tap, map } from 'rxjs/operators';
+import { catchError, switchMap, tap, map, filter } from 'rxjs/operators';
 import { environment } from '../../environments/environment.prod';
 import { AuthService } from './auth.service';
 import { Badge, Chef, Recipe, User } from '../models/recipe.model';
@@ -412,34 +412,66 @@ export class UserService {
   }
 
   // Upload cover picture with Cloudinary support
-  uploadCoverPicture(file: File): Observable<any> {
-    return this.authService.getValidToken().pipe(
-      switchMap(token => {
-        const formData = new FormData();
-        formData.append('coverPicture', file);
+ // In user.service.ts - update uploadCoverPicture method
+uploadCoverPicture(file: File): Observable<any> {
+  return this.authService.getValidToken().pipe(
+    switchMap(token => {
+      const formData = new FormData();
+      formData.append('coverPicture', file);
 
-        const headers = new HttpHeaders({
-          'Authorization': `Bearer ${token}`
-        });
+      // IMPORTANT: Don't set Content-Type header - let browser set it with boundary
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+        // NO 'Content-Type': 'multipart/form-data' - Browser will add it automatically
+      });
 
-        return this.http.post<any>(`${this.apiUrl}/profile/cover`, formData, { headers }).pipe(
-          map(response => {
-            // Format the response image URLs
-            if (response.user) {
-              response.user.profilePicture = this.authService.getFullProfileImageUrl(response.user.profilePicture);
-              response.user.coverPicture = this.authService.getFullCoverImageUrl(response.user.coverPicture);
-            }
-            if (response.coverPicture) {
-              response.coverPicture = this.authService.getFullCoverImageUrl(response.coverPicture);
-            }
-            return response;
-          }),
-          catchError(this.handleError)
-        );
-      })
-    );
-  }
+      console.log('📤 Uploading cover picture to:', `${this.apiUrl}/profile/cover`);
+      console.log('📄 File details:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
 
+      return this.http.post<any>(`${this.apiUrl}/profile/cover`, formData, { 
+        headers,
+        reportProgress: true, // Add progress reporting
+        observe: 'events' as const // Observe events for debugging
+      }).pipe(
+        tap(event => {
+          // Log upload progress
+          if (event.type === HttpEventType.UploadProgress) {
+            const progress = Math.round(100 * event.loaded / (event.total || 1));
+            console.log(`📊 Upload progress: ${progress}%`);
+          }
+          if (event.type === HttpEventType.Response) {
+            console.log('✅ Cover upload response:', event.body);
+          }
+        }),
+        // Filter to only get the final response
+        filter(event => event.type === HttpEventType.Response),
+        map(event => (event as HttpResponse<any>).body),
+        catchError(error => {
+          console.error('❌ Cover upload failed:', error);
+          
+          // More detailed error logging
+          if (error.status === 0) {
+            console.error('Network error - check CORS or server connection');
+          } else if (error.status === 413) {
+            console.error('File too large');
+          } else if (error.status === 415) {
+            console.error('Unsupported media type');
+          }
+          
+          return throwError(() => ({
+            message: error.error?.message || 'Upload failed',
+            code: error.error?.code || 'UPLOAD_ERROR',
+            status: error.status
+          }));
+        })
+      );
+    })
+  );
+}
   updateProfileSettings(settings: any): Observable<User> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
