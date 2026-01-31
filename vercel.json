@@ -1,14 +1,13 @@
 {
-  "builds": [
+  "buildCommand": "npm run build --prod",
+  "outputDirectory": "dist/food-recipe-app",
+  "installCommand": "npm install",
+  "devCommand": "ng serve",
+  "framework": "angular",
+  "rewrites": [
     {
-      "src": "dist/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
