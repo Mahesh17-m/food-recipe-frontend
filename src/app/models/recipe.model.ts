@@ -118,6 +118,7 @@ export interface Recipe {
   category?: string;
   cuisine?: string;
   imageUrl?: string;
+   image?: string | null;
   userId?: string;
   user?: User;
   author?: User;

@@ -60,8 +60,8 @@ export class AuthService {
           username: parsedUser.username || '',
           email: parsedUser.email || '',
           name: parsedUser.name || parsedUser.username || '',
-          profilePicture: parsedUser.profilePicture || '/uploads/profile/default-avatar.jpg',
-          coverPicture: parsedUser.coverPicture || '/uploads/profile/default-cover.jpg',
+          profilePicture: this.getFullProfileImageUrl(parsedUser.profilePicture),
+          coverPicture: this.getFullCoverImageUrl(parsedUser.coverPicture),
           bio: parsedUser.bio,
           location: parsedUser.location,
           website: parsedUser.website,
@@ -205,8 +205,8 @@ export class AuthService {
           username: response.user.username || '',
           email: response.user.email || '',
           name: response.user.name || response.user.username || '',
-          profilePicture: response.user.profilePicture || '/uploads/profile/default-avatar.jpg',
-          coverPicture: response.user.coverPicture || '/uploads/profile/default-cover.jpg',
+          profilePicture: this.getFullProfileImageUrl(response.user.profilePicture),
+          coverPicture: this.getFullCoverImageUrl(response.user.coverPicture),
           bio: response.user.bio,
           location: response.user.location,
           website: response.user.website,
@@ -264,8 +264,14 @@ export class AuthService {
     }).pipe(
       tap(response => {
         this.storeTokens(response.token, response.refreshToken);
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
-        this.currentUserSubject.next(response.user);
+        // Ensure profile picture is properly formatted
+        const userWithFormattedImage = {
+          ...response.user,
+          profilePicture: this.getFullProfileImageUrl(response.user.profilePicture),
+          coverPicture: this.getFullCoverImageUrl(response.user.coverPicture)
+        };
+        localStorage.setItem('currentUser', JSON.stringify(userWithFormattedImage));
+        this.currentUserSubject.next(userWithFormattedImage);
       }),
       map(response => response.user),
       catchError(this.handleError)
@@ -274,8 +280,8 @@ export class AuthService {
 
   // ============ GOOGLE OAUTH METHODS ============
   initiateGoogleLogin(): void {
-   const redirectUri = encodeURIComponent(environment.redirectUri);
-  window.location.href = `${this.apiUrl}/auth/google?redirect_uri=${redirectUri}`;
+    const redirectUri = encodeURIComponent(environment.redirectUri);
+    window.location.href = `${this.apiUrl}/auth/google?redirect_uri=${redirectUri}`;
   }
 
   handleOAuthCallback(token: string, refreshToken: string, userData: any): Observable<User> {
@@ -288,8 +294,8 @@ export class AuthService {
       username: userData.username || '',
       email: userData.email || '',
       name: userData.name || userData.username || '',
-      profilePicture: userData.profilePicture || '/uploads/profile/default-avatar.jpg',
-      coverPicture: userData.coverPicture || '/uploads/profile/default-cover.jpg',
+      profilePicture: this.getFullProfileImageUrl(userData.profilePicture),
+      coverPicture: this.getFullCoverImageUrl(userData.coverPicture),
       bio: userData.bio,
       location: userData.location,
       website: userData.website,
@@ -434,28 +440,51 @@ export class AuthService {
     );
   }
 
-  getFullProfileImageUrl(relativePath: string | undefined): string {
-    if (!relativePath) {
-      return 'assets/images/default-avatar.png';
+  // ============ IMAGE URL HANDLING FOR CLOUDINARY ============
+  getFullProfileImageUrl(relativePath: string | undefined | null): string {
+    return this.getImageUrl(relativePath, 'assets/images/default-avatar.png');
+  }
+
+  getFullCoverImageUrl(relativePath: string | undefined | null): string {
+    return this.getImageUrl(relativePath, 'assets/images/default-cover.jpg');
+  }
+
+  getRecipeImageUrl(relativePath: string | undefined | null): string {
+    return this.getImageUrl(relativePath, 'assets/images/recipe-placeholder.jpg');
+  }
+
+  private getImageUrl(relativePath: string | undefined | null, defaultImage: string): string {
+    // Handle null, undefined, or empty string
+    if (!relativePath || relativePath.trim() === '' || relativePath === 'null' || relativePath === 'undefined') {
+      return defaultImage;
     }
     
-    const cleanPath = relativePath.split('?')[0];
+    const cleanPath = relativePath.split('?')[0].trim();
     
+    // If it's already a full URL (Cloudinary or any http URL), return as-is
     if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
       return cleanPath;
     }
     
+    // If it's a Cloudinary URL without protocol (shouldn't happen but just in case)
+    if (cleanPath.includes('cloudinary.com')) {
+      return `https://${cleanPath}`;
+    }
+    
+    // If it's a local path (legacy), construct URL with backend
     if (cleanPath.startsWith('/uploads')) {
       const backendUrl = environment.apiUrl.replace('/api', '');
       return `${backendUrl}${cleanPath}`;
     }
     
+    // If it's just a filename without path
     if (!cleanPath.includes('/')) {
       const backendUrl = environment.apiUrl.replace('/api', '');
       return `${backendUrl}/uploads/${cleanPath}`;
     }
     
-    return 'assets/images/default-avatar.png';
+    // Default fallback
+    return defaultImage;
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
@@ -503,8 +532,12 @@ export class AuthService {
       _id: updatedUser._id || currentUser?._id || '',
       username: updatedUser.username || currentUser?.username || '',
       email: updatedUser.email || currentUser?.email || '',
-      profilePicture: updatedUser.profilePicture !== undefined ? updatedUser.profilePicture : currentUser?.profilePicture,
-      coverPicture: updatedUser.coverPicture !== undefined ? updatedUser.coverPicture : currentUser?.coverPicture,
+      profilePicture: this.getFullProfileImageUrl(
+        updatedUser.profilePicture !== undefined ? updatedUser.profilePicture : currentUser?.profilePicture
+      ),
+      coverPicture: this.getFullCoverImageUrl(
+        updatedUser.coverPicture !== undefined ? updatedUser.coverPicture : currentUser?.coverPicture
+      ),
       bio: updatedUser.bio !== undefined ? updatedUser.bio : currentUser?.bio,
       location: updatedUser.location !== undefined ? updatedUser.location : currentUser?.location,
       website: updatedUser.website !== undefined ? updatedUser.website : currentUser?.website,

@@ -20,6 +20,16 @@ export class UserService {
   // Get all chefs
   getChefs(): Observable<{users: Chef[]}> {
     return this.http.get<{users: Chef[]}>(`${this.apiUrl}/profile/chefs`).pipe(
+      map(response => {
+        // Ensure profile pictures have full URLs
+        if (response.users) {
+          response.users = response.users.map(chef => ({
+            ...chef,
+            profilePicture: this.authService.getFullProfileImageUrl(chef.profilePicture)
+          }));
+        }
+        return response;
+      }),
       catchError(this.handleError)
     );
   }
@@ -31,6 +41,7 @@ export class UserService {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<User>(`${this.apiUrl}/profile/`, { headers }).pipe(
+          map(user => this.formatUserImageUrls(user)),
           catchError(this.handleError)
         );
       })
@@ -44,34 +55,53 @@ export class UserService {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<User>(`${this.apiUrl}/profile/${userId}`, { headers }).pipe(
+          map(user => this.formatUserImageUrls(user)),
           catchError(this.handleError)
         );
       })
     );
   }
 
-  // FIXED: Get author profile with proper recipe image handling
- // In user.service.ts - getAuthorProfile method
-getAuthorProfile(userId: string): Observable<any> {
-  return this.authService.getValidToken().pipe(
-    switchMap(token => {
-      const headers = new HttpHeaders({
-        'Authorization': `Bearer ${token}`
-      });
-      return this.http.get<any>(`${this.apiUrl}/profile/author/${userId}`, { headers }).pipe(
-        map(response => {
-          console.log('Raw backend response for author:', {
-            author: response.username,
-            recipeCount: response.recipes?.length,
-            firstRecipe: response.recipes?.[0]
-          });
-          return response;
-        }),
-        catchError(this.handleError)
-      );
-    })
-  );
-}
+  // Get author profile with proper image URL handling
+  getAuthorProfile(userId: string): Observable<any> {
+    return this.authService.getValidToken().pipe(
+      switchMap(token => {
+        const headers = new HttpHeaders({
+          'Authorization': `Bearer ${token}`
+        });
+        return this.http.get<any>(`${this.apiUrl}/profile/author/${userId}`, { headers }).pipe(
+          map(response => {
+            // Format user images
+            const formattedResponse = {
+              ...response,
+              profilePicture: this.authService.getFullProfileImageUrl(response.profilePicture),
+              coverPicture: this.authService.getFullCoverImageUrl(response.coverPicture)
+            };
+            
+            // Format recipe images
+            if (formattedResponse.recipes && Array.isArray(formattedResponse.recipes)) {
+              formattedResponse.recipes = formattedResponse.recipes.map((recipe: { imageUrl: any; image: any; }) => ({
+                ...recipe,
+                imageUrl: this.authService.getRecipeImageUrl(recipe.imageUrl || recipe.image),
+                image: this.authService.getRecipeImageUrl(recipe.image || recipe.imageUrl)
+              }));
+            }
+            
+            console.log('Formatted author profile:', {
+              author: formattedResponse.username,
+              recipeCount: formattedResponse.recipes?.length,
+              profilePicture: formattedResponse.profilePicture,
+              coverPicture: formattedResponse.coverPicture
+            });
+            
+            return formattedResponse;
+          }),
+          catchError(this.handleError)
+        );
+      })
+    );
+  }
+
   // Toggle follow with proper stats update
   toggleFollow(userId: string): Observable<any> {
     return this.authService.getValidToken().pipe(
@@ -115,7 +145,10 @@ getAuthorProfile(userId: string): Observable<any> {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<{ following: User[] }>(url, { headers }).pipe(
-          map(response => response.following || []),
+          map(response => {
+            const following = response.following || [];
+            return following.map(user => this.formatUserImageUrls(user));
+          }),
           tap(following => {
             // Update local user state with accurate following count
             if (!userId) {
@@ -146,7 +179,10 @@ getAuthorProfile(userId: string): Observable<any> {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<{ followers: User[] }>(url, { headers }).pipe(
-          map(response => response.followers || []),
+          map(response => {
+            const followers = response.followers || [];
+            return followers.map(user => this.formatUserImageUrls(user));
+          }),
           tap(followers => {
             // Update local user state with accurate followers count
             if (!userId) {
@@ -173,6 +209,9 @@ getAuthorProfile(userId: string): Observable<any> {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<Recipe[]>(`${this.apiUrl}/profile/saved-recipes`, { headers }).pipe(
+          map(recipes => {
+            return recipes.map(recipe => this.formatRecipeImageUrl(recipe));
+          }),
           tap(recipes => {
             // Update saved recipes count
             const currentUser = this.authService.currentUserValue;
@@ -197,6 +236,9 @@ getAuthorProfile(userId: string): Observable<any> {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<Recipe[]>(`${this.apiUrl}/profile/favorite-recipes`, { headers }).pipe(
+          map(recipes => {
+            return recipes.map(recipe => this.formatRecipeImageUrl(recipe));
+          }),
           tap(recipes => {
             // Update favorites count
             const currentUser = this.authService.currentUserValue;
@@ -270,7 +312,7 @@ getAuthorProfile(userId: string): Observable<any> {
     );
   }
 
-  // FIXED: Get user stats with all data
+  // Get user stats with proper image URL formatting
   getUserStats(userId?: string): Observable<any> {
     const url = userId 
       ? `${this.apiUrl}/profile/stats/${userId}`
@@ -283,8 +325,8 @@ getAuthorProfile(userId: string): Observable<any> {
         });
         return this.http.get<any>(url, { headers }).pipe(
           map(stats => {
-            // Ensure all required fields exist with defaults
-            return {
+            // Format image URLs
+            const formattedStats = {
               recipesCount: stats.recipesCount || 0,
               favoritesCount: stats.favoritesCount || 0,
               reviewsCount: stats.reviewsCount || 0,
@@ -296,12 +338,16 @@ getAuthorProfile(userId: string): Observable<any> {
               totalInteractions: stats.totalInteractions || 0,
               engagementRate: stats.engagementRate || 0,
               userLevel: stats.userLevel || 'New Cook',
-              recentRecipes: stats.recentRecipes || [],
+              recentRecipes: (stats.recentRecipes || []).map((recipe: Recipe) => 
+                this.formatRecipeImageUrl(recipe)
+              ),
               recentReviews: stats.recentReviews || [],
               username: stats.username || '',
-              profilePicture: stats.profilePicture || '',
-              coverPicture: stats.coverPicture || ''
+              profilePicture: this.authService.getFullProfileImageUrl(stats.profilePicture),
+              coverPicture: this.authService.getFullCoverImageUrl(stats.coverPicture)
             };
+            
+            return formattedStats;
           }),
           catchError(error => {
             console.error('Error getting user stats:', error);
@@ -329,8 +375,8 @@ getAuthorProfile(userId: string): Observable<any> {
       recentRecipes: [],
       recentReviews: [],
       username: '',
-      profilePicture: '',
-      coverPicture: ''
+      profilePicture: this.authService.getFullProfileImageUrl(''),
+      coverPicture: this.authService.getFullCoverImageUrl('')
     };
   }
 
@@ -365,7 +411,7 @@ getAuthorProfile(userId: string): Observable<any> {
     );
   }
 
-  // FIXED: Upload cover picture with proper response handling
+  // Upload cover picture with Cloudinary support
   uploadCoverPicture(file: File): Observable<any> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
@@ -376,8 +422,18 @@ getAuthorProfile(userId: string): Observable<any> {
           'Authorization': `Bearer ${token}`
         });
 
-        return this.http.post<any>(`${this.apiUrl}/profile/upload-cover`, formData, { headers }).pipe(
-          map(response => response), // Just return response, don't tap
+        return this.http.post<any>(`${this.apiUrl}/profile/cover`, formData, { headers }).pipe(
+          map(response => {
+            // Format the response image URLs
+            if (response.user) {
+              response.user.profilePicture = this.authService.getFullProfileImageUrl(response.user.profilePicture);
+              response.user.coverPicture = this.authService.getFullCoverImageUrl(response.user.coverPicture);
+            }
+            if (response.coverPicture) {
+              response.coverPicture = this.authService.getFullCoverImageUrl(response.coverPicture);
+            }
+            return response;
+          }),
           catchError(this.handleError)
         );
       })
@@ -392,6 +448,7 @@ getAuthorProfile(userId: string): Observable<any> {
           'Content-Type': 'application/json'
         });
         return this.http.put<User>(`${this.apiUrl}/profile`, settings, { headers }).pipe(
+          map(user => this.formatUserImageUrls(user)),
           tap(user => {
             this.authService.updateUserState(user);
           }),
@@ -458,6 +515,7 @@ getAuthorProfile(userId: string): Observable<any> {
 
   getUserRecipes(userId: string): Observable<Recipe[]> {
     return this.http.get<Recipe[]>(`${this.apiUrl}/profile/${userId}/recipes`).pipe(
+      map(recipes => recipes.map(recipe => this.formatRecipeImageUrl(recipe))),
       catchError(this.handleError)
     );
   }
@@ -469,10 +527,38 @@ getAuthorProfile(userId: string): Observable<any> {
           'Authorization': `Bearer ${token}`
         });
         return this.http.get<any[]>(`${this.apiUrl}/profile/activity`, { headers }).pipe(
+          map(activities => {
+            return activities.map(activity => {
+              if (activity.recipe) {
+                activity.recipe = this.formatRecipeImageUrl(activity.recipe);
+              }
+              if (activity.user) {
+                activity.user = this.formatUserImageUrls(activity.user);
+              }
+              return activity;
+            });
+          }),
           catchError(this.handleError)
         );
       })
     );
+  }
+
+  // ============ HELPER METHODS ============
+  private formatUserImageUrls(user: User): User {
+    return {
+      ...user,
+      profilePicture: this.authService.getFullProfileImageUrl(user.profilePicture),
+      coverPicture: this.authService.getFullCoverImageUrl(user.coverPicture)
+    };
+  }
+
+  private formatRecipeImageUrl(recipe: Recipe): Recipe {
+    return {
+      ...recipe,
+      imageUrl: this.authService.getRecipeImageUrl(recipe.imageUrl || recipe.image),
+      image: this.authService.getRecipeImageUrl(recipe.image || recipe.imageUrl)
+    };
   }
 
   private handleError(error: any): Observable<never> {
