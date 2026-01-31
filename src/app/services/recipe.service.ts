@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, Subject, of } from 'rxjs';
 import { catchError, switchMap, tap, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 import { Recipe, Review } from '../models/recipe.model';

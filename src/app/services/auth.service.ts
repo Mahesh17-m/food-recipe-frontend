@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap, switchMap, distinctUntilChanged } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 import { 
   User, 
   AuthResponse, 
@@ -274,7 +274,8 @@ export class AuthService {
 
   // ============ GOOGLE OAUTH METHODS ============
   initiateGoogleLogin(): void {
-    window.location.href = `${this.apiUrl}/auth/google`;
+   const redirectUri = encodeURIComponent(environment.redirectUri);
+  window.location.href = `${this.apiUrl}/auth/google?redirect_uri=${redirectUri}`;
   }
 
   handleOAuthCallback(token: string, refreshToken: string, userData: any): Observable<User> {
