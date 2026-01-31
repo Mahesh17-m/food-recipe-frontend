@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build --prod",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/food-recipe-app",
   "installCommand": "npm install",
   "devCommand": "ng serve",
