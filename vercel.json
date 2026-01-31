@@ -1,28 +1,13 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/foodrecipeapp/browser",
+  "framework": "angular",
+  "installCommand": "npm install",
+  "devCommand": "ng serve",
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    },
-    {
-      "source": "assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
     }
   ]
 }
