@@ -420,18 +420,32 @@ export class AuthService {
     );
   }
 
+  // Upload Profile Picture - FIXED
   uploadProfilePicture(file: File): Observable<User> {
     return this.getValidToken().pipe(
       switchMap(token => {
         const formData = new FormData();
-        formData.append('profilePicture', file);
+        // Use 'profilePicture' as field name to match backend middleware
+        formData.append('profilePicture', file, file.name);
 
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
+          // DO NOT set Content-Type - let browser set it
         });
 
-        return this.http.post<User>(`${this.apiUrl}/auth/profile/picture`, formData, { headers }).pipe(
+        console.log('📤 Uploading profile picture to:', `${this.apiUrl}/auth/profile/picture`);
+        console.log('📄 File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+
+        return this.http.post<User>(`${this.apiUrl}/auth/profile/picture`, formData, { 
+          headers,
+          reportProgress: true
+        }).pipe(
           tap(user => {
+            console.log('✅ Profile picture upload successful:', user.profilePicture);
             this.updateUserState(user, true);
           }),
           catchError(this.handleError)
