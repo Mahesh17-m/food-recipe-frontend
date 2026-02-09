@@ -22,7 +22,7 @@
 ================================ */
 .hero-section {
   width: 100%;
-  height: 400px;
+  height: 350px;
   background: #ffffff;
   overflow: hidden;
   position: relative;
@@ -49,7 +49,7 @@
 }
 
 /* ===============================
-   SPLIT SCREEN (50 / 50)
+   SPLIT SCREEN (70 / 30)
 ================================ */
 .split-screen-container {
   display: flex;
@@ -59,31 +59,31 @@
 }
 
 .screen-half {
-  width: 50%;
   height: 100%;
   position: relative;
   overflow: hidden;
 }
 
-/* ===============================
-   DIAGONAL CROSS SPLIT
-================================ */
-/* Video side */
+/* Adjust widths for video left */
 .video-left {
-  clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+  width: 70%;
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
 }
 
-.video-right {
-  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);
-}
-
-/* Content side */
 .content-right {
-  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);
+  width: 30%;
+  clip-path: polygon(5% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Adjust widths for video right */
+.video-right {
+  width: 70%;
+  clip-path: polygon(5% 0, 100% 0, 100% 100%, 0 100%);
 }
 
 .content-left {
-  clip-path: polygon(0 0, 92% 0, 100% 100%, 0 100%);
+  width: 30%;
+  clip-path: polygon(0 0, 95% 0, 100% 100%, 0 100%);
 }
 
 /* ===============================
@@ -267,23 +267,29 @@
 ================================ */
 .carousel-indicators {
   position: absolute;
-  bottom: 16px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .carousel-indicator {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   background: #d1d5db;
   border-radius: 50%;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .carousel-indicator.active {
   background: #2563eb;
+  transform: scale(1.2);
 }
 
 /* ===============================
@@ -714,7 +720,7 @@
 .template-eggs .carousel-indicator.active { background: #ffcc66; }
 
 @media (min-width: 1600px) {
-  .hero-section { height: 800px; }
+  .hero-section { height: 700px; }
   .title-line { font-size: 5.2rem; }
   .description-line { font-size: 1.8rem; }
   .description-subline { font-size: 1.3rem; }
@@ -725,14 +731,14 @@
 }
 
 @media (max-width: 1599px) and (min-width: 1400px) {
-  .hero-section { height: 750px; }
+  .hero-section { height: 650px; }
   .title-line { font-size: 4.2rem; }
   .description-line { font-size: 1.5rem; }
   .gallery-image-frame { width: 130px; height: 130px; min-width: 130px; }
 }
 
 @media (max-width: 1399px) and (min-width: 1200px) {
-  .hero-section { height: 700px; }
+  .hero-section { height: 600px; }
   .title-line { font-size: 3.8rem; }
   .description-line { font-size: 1.4rem; }
   .description-subline { font-size: 1rem; }
@@ -744,7 +750,7 @@
 }
 
 @media (max-width: 1199px) and (min-width: 992px) {
-  .hero-section { height: 650px; }
+  .hero-section { height: 550px; }
   .split-screen-container { flex-direction: column !important; }
   .video-screen, .content-screen {
     width: 100% !important;
@@ -770,7 +776,7 @@
 }
 
 @media (max-width: 991px) and (min-width: 768px) {
-  .hero-section { height: 600px; }
+  .hero-section { height: 500px; }
   .split-screen-container { flex-direction: column !important; }
   .video-screen, .content-screen {
     width: 100% !important;
@@ -798,7 +804,7 @@
 }
 
 @media (max-width: 767px) and (min-width: 576px) {
-  .hero-section { height: 550px; }
+  .hero-section { height: 450px; }
   .split-screen-container { flex-direction: column !important; }
   .video-screen, .content-screen {
     width: 100% !important;
@@ -820,7 +826,7 @@
 }
 
 @media (max-width: 575px) and (min-width: 375px) {
-  .hero-section { height: 500px; }
+  .hero-section { height: 400px; }
   .split-screen-container { flex-direction: column !important; }
   .video-screen, .content-screen {
     width: 100% !important;
@@ -846,7 +852,7 @@
 }
 
 @media (max-width: 374px) {
-  .hero-section { height: 450px; }
+  .hero-section { height: 350px; }
   .video-screen { height: 60%; }
   .content-screen { height: 40%; }
   .title-line { font-size: 1.8rem; }
