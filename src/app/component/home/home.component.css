@@ -30,9 +30,13 @@ body {
   margin: 0;
 }
 
+/* =========================================== */
+/* HERO SECTION FIXES                          */
+/* =========================================== */
+
 .hero-section {
   width: 100%;
-  height: 320px;
+  height: 500px;
   background: #ffffff;
   overflow: hidden;
   position: relative;
@@ -174,12 +178,24 @@ body {
   padding: 0 1rem;
 }
 
+/* WEB VIEW FIX: Tags in straight line */
 .screen-tags {
   display: flex;
   gap: 0.6rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-bottom: 1rem;
-  justify-content: flex-start;
+  justify-content: center;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.screen-tags::-webkit-scrollbar {
+  height: 4px;
+}
+
+.screen-tags::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 2px;
 }
 
 .screen-tag {
@@ -190,6 +206,7 @@ body {
   border-radius: 999px;
   font-size: 0.75rem;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .screen-gallery {
@@ -462,13 +479,15 @@ body {
   --btn-shadow: rgba(255, 204, 102, 0.966);
   --btn-shadow-hover: rgba(255, 204, 102, 0.866);
 }
+
 /* =========================================== */
-/* HERO SECTION MOBILE FIXES - CORRECT LAYOUT  */
+/* MOBILE VIEW FIXES - UPDATED & CORRECTED     */
 /* =========================================== */
 
 @media (max-width: 767px) {
   .hero-section {
-    height: 400px !important; /* Reduced height for more compact layout */
+    height: 380px !important;
+    margin-bottom: 0 !important; /* Remove gap between hero and recipe switcher */
   }
 
   .split-screen-container {
@@ -478,7 +497,7 @@ body {
 
   .screen-half {
     width: 100% !important;
-    height: 50% !important; /* Both sections 50% height */
+    height: 50% !important;
     clip-path: none !important;
     flex-shrink: 0;
   }
@@ -494,9 +513,9 @@ body {
     height: 100%;
   }
 
-  /* Video content overlay - MUCH SMALLER font sizes */
+  /* VIDEO CONTENT - FIXED TEXT SIZES */
   .video-content-overlay {
-    padding: 0.5rem !important; /* Much reduced padding */
+    padding: 0.5rem 0.8rem !important; /* Reduced padding */
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -506,28 +525,37 @@ body {
   }
 
   .hero-title {
-    font-size: 0.9rem !important; /* MUCH smaller font */
-    margin-bottom: 2px; /* Reduced margin */
+    font-size: 1.2rem !important; /* Fixed: Proper mobile size */
+    margin-bottom: 0.3rem !important;
     text-align: center;
-    width: 100%;
-    line-height: 1;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .title-line {
+    font-size: 1.2rem !important; /* Fixed: Proper mobile size */
+    margin-bottom: 0.1rem !important;
+    line-height: 1.1;
   }
 
   .description-line {
-    font-size: 0.7rem !important; /* MUCH smaller font */
-    margin-bottom: 0.1rem; /* Reduced margin */
-    line-height: 1;
+    font-size: 0.85rem !important; /* Fixed: Proper mobile size */
+    margin-bottom: 0.1rem !important;
+    line-height: 1.2;
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
   }
 
   .description-subline {
-    font-size: 0.6rem !important; /* MUCH smaller font */
-    line-height: 1;
-    margin-top: 0.1rem; /* Reduced margin */
+    font-size: 0.7rem !important; /* Fixed: Proper mobile size */
+    line-height: 1.2;
+    margin-top: 0.1rem !important;
     font-weight: 300;
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
   }
 
-  /* Content screen - 50% height with VERY compact layout */
+  /* Content screen - 50% height */
   .content-screen {
     height: 50% !important;
     min-height: 50%;
@@ -536,13 +564,13 @@ body {
   }
 
   .screen-content {
-    padding: 0.2rem 0.4rem !important; /* MUCH reduced padding */
+    padding: 0.3rem 0.5rem !important;
     justify-content: space-between !important;
     height: 100%;
   }
 
   .screen-content-inner {
-    gap: 0.1rem !important; /* EXTREMELY small gap */
+    gap: 0.3rem !important; /* Reduced gap between elements */
     justify-content: flex-start !important;
     padding: 0 !important;
     flex-direction: column !important;
@@ -552,20 +580,20 @@ body {
     height: 100%;
   }
 
-  /* Tags - three in one line, VERY small, VERY close to pics */
+  /* TAGS - REDUCED BOTTOM MARGIN */
   .screen-tags {
     justify-content: center !important;
-    margin-bottom: 0.05rem !important; /* EXTREMELY reduced margin - almost touching pics */
-    gap: 0.15rem; /* Very small gap between tags */
+    margin-bottom: 0.3rem !important; /* Reduced margin to bring tags closer to gallery */
+    gap: 0.3rem;
     flex-wrap: nowrap;
     overflow-x: visible;
     width: 100%;
-    padding: 0 !important; /* No padding */
+    padding: 0 !important;
   }
 
   .screen-tag {
-    font-size: 0.5rem !important; /* EXTREMELY small */
-    padding: 0.15rem 0.3rem !important; /* Very small padding */
+    font-size: 0.65rem !important;
+    padding: 0.25rem 0.5rem !important;
     white-space: nowrap;
     flex-shrink: 0;
     background: #f0f4ff;
@@ -573,98 +601,115 @@ body {
     margin: 0;
   }
 
-  /* Gallery - TWO PICS side by side with half description */
+  /* GALLERY - DIRECTLY UNDER TAGS WITH MINIMAL GAP */
   .screen-gallery {
     width: 100%;
-    margin: 0 !important; /* NO margin - directly under tags */
+    margin: 0.2rem 0 !important; /* Reduced margin */
     display: flex;
-    flex-direction: row !important; /* Two pics side by side */
+    flex-direction: row !important;
     justify-content: center;
-    gap: 0.3rem !important; /* Very small space between two pics */
+    gap: 0.4rem !important;
     flex: 1;
-    align-items: flex-start;
-    padding-top: 0; /* No padding at top */
+    align-items: center;
   }
 
   /* Show first TWO gallery items */
   .screen-gallery .gallery-item:nth-child(1),
   .screen-gallery .gallery-item:nth-child(2) {
     display: flex !important;
-    flex: 1; /* Each takes equal space */
-    min-width: 0; /* Allow shrinking */
+    flex: 1;
+    min-width: 0;
   }
-  
+
   .screen-gallery .gallery-item:nth-child(n+3) {
     display: none !important;
   }
 
+  /* Each gallery item: image + description side by side */
   .gallery-item {
-    flex-direction: column !important; /* Stack image above text */
-    text-align: center;
-    gap: 0.15rem !important; /* EXTREMELY small gap between image and text */
+    flex-direction: row !important;
+    text-align: left;
+    gap: 0.4rem !important;
     width: 100%;
-    max-width: 120px; /* Slightly narrower for two items */
+    max-width: 48%;
     margin: 0;
     align-items: center;
   }
 
-  /* Small images for two pics */
+  /* Images */
   .gallery-image-frame {
-    width: 65px !important;
-    height: 65px !important; /* Smaller images */
-    min-width: 65px !important;
-    max-width: 65px;
-    margin: 0 auto;
+    width: 70px !important;
+    height: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px;
+    margin: 0;
+    flex-shrink: 0;
   }
 
   .gallery-caption {
-    text-align: center;
+    text-align: left;
     width: 100%;
     padding: 0;
+    flex: 1;
   }
 
-  /* EXTREMELY small text for two pics */
+  /* Gallery captions */
   .caption-title {
-    font-size: 0.65rem !important;
-    justify-content: center;
-    margin-bottom: 0.02rem; /* Almost no margin */
+    font-size: 0.82rem !important;
+    justify-content: flex-start;
+    margin-bottom: 0.1rem !important;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 0.15rem;
-    line-height: 1;
+    gap: 0.1rem;
+    line-height: 1.1;
   }
 
   .caption-title i {
-    font-size: 0.55rem !important;
+    font-size: 0.72rem !important;
   }
 
   .caption-text {
-    font-size: 0.5rem !important; /* EXTREMELY small description */
-    line-height: 1 !important;
+    font-size: 0.67rem !important;
+    line-height: 1.2 !important;
     color: #666;
     margin: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    height: 1rem; /* Smaller fixed height */
+    height: 1.5rem;
   }
 
-  /* Action button - EXTREMELY close to pics */
+  /* Action button */
   .screen-action {
-    margin-top: 0.05rem !important; /* ALMOST TOUCHING pics */
-    margin-bottom: 0.05rem !important;
+    margin-top: 0.3rem !important;
+    margin-bottom: 0.1rem !important;
     width: 100%;
+    text-align: center;
   }
 
   .screen-action-btn {
-    padding: 0.25rem 0.7rem !important; /* EXTREMELY small padding */
-    font-size: 0.55rem !important; /* EXTREMELY small font */
-    width: 100% !important;
-    max-width: 130px; /* Smaller max width */
+    padding: 0.4rem 1rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    width: auto !important;
+    min-width: 150px;
+    max-width: 180px;
     margin: 0 auto;
-    display: block;
+    display: inline-block;
+    border-radius: 25px !important;
+    text-align: center;
+    background: linear-gradient(135deg, #e62c13, #ee6161) !important;
+    color: white !important;
+    border: none;
+    box-shadow: 0 2px 8px rgba(230, 44, 19, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .screen-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(230, 44, 19, 0.4);
   }
 
   /* Carousel controls */
@@ -678,484 +723,53 @@ body {
   }
 
   .carousel-indicator {
-    width: 3px !important;
-    height: 3px !important;
-  }
-}
-
-/* Extra small mobile devices */
-@media (max-width: 480px) {
-  .hero-section {
-    height: 380px !important; /* Even more compact */
-  }
-  
-  .description-line {
-    font-size: 0.65rem !important; /* Even smaller */
-  }
-  
-  .description-subline {
-    font-size: 0.55rem !important; /* Even smaller */
-  }
-  
-  .screen-gallery {
-    gap: 0.25rem !important; /* Even smaller gap */
-  }
-  
-  .gallery-image-frame {
-    width: 60px !important;
-    height: 60px !important; /* Even smaller images */
-  }
-  
-  .caption-title {
-    font-size: 0.6rem !important; /* Even smaller */
-  }
-  
-  .caption-text {
-    font-size: 0.45rem !important; /* Even smaller */
-    height: 0.9rem; /* Even smaller height */
-  }
-  
-  .screen-action-btn {
-    padding: 0.2rem 0.6rem !important; /* Even smaller */
-    font-size: 0.5rem !important; /* Even smaller */
-    max-width: 120px; /* Even smaller */
-  }
-  
-  .screen-tag {
-    font-size: 0.45rem !important; /* Even smaller */
-    padding: 0.1rem 0.25rem !important; /* Even smaller */
-  }
-}
-
-/* Very small mobile devices */
-@media (max-width: 360px) {
-  .hero-section {
-    height: 360px !important; /* Most compact */
-  }
-  
-  .screen-gallery {
-    gap: 0.2rem !important; /* Smallest gap */
-  }
-  
-  .gallery-image-frame {
-    width: 55px !important;
-    height: 55px !important; /* Smallest images */
-  }
-  
-  .caption-title {
-    font-size: 0.55rem !important; /* Smallest */
-  }
-  
-  .caption-text {
-    font-size: 0.42rem !important; /* Smallest */
-    height: 0.85rem; /* Smallest height */
-  }
-  
-  .screen-action-btn {
-    max-width: 110px; /* Smallest */
-    padding: 0.18rem 0.5rem !important; /* Smallest */
-    font-size: 0.48rem !important; /* Smallest */
-  }
-  
-  .hero-title {
-    font-size: 0.8rem !important; /* Even smaller for tiny screens */
-  }
-  
-  .description-line {
-    font-size: 0.6rem !important; /* Even smaller */
-  }
-  
-  .description-subline {
-    font-size: 0.5rem !important; /* Even smaller */
+    width: 4px !important;
+    height: 4px !important;
   }
 }
 
 /* =========================================== */
-/* FEATURED SECTIONS FIXES                     */
+/* RECIPE SWITCHER TABS - FIXED                */
 /* =========================================== */
-
-.featured-sections {
-  padding: 80px 40px !important;
-  background: #fafafa;
-}
-
-.featured-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr) !important; /* Fixed 2 columns */
-  gap: 50px !important; /* Increased gap */
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0;
-  width: 100%;
-}
-
-.featured-box {
-  border-radius: 20px !important;
-  padding: 70px 60px !important; /* Increased padding */
-  min-height: 600px !important; /* Increased height */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important;
-  transition: all 0.4s ease;
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-}
-
-.featured-box:hover {
-  transform: translateY(-15px) !important;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.15) !important;
-}
-
-.recipes-box {
-  background: #ff6b6b url('/assets/recipe.png') center/cover no-repeat;
-  color: white;
-  background-size: cover !important;
-}
-
-.chefs-box {
-  background: #4ecdc4 url('/assets/chef.png') center/cover no-repeat;
-  color: white;
-  background-size: cover !important;
-}
-
-.featured-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 500px;
-}
-
-.featured-content h2 {
-  font-size: 3rem !important; /* Increased font size */
-  margin-bottom: 1.8rem !important;
-  line-height: 1.2;
-  font-weight: 700;
-}
-
-.featured-content p {
-  font-size: 1.3rem !important; /* Increased font size */
-  line-height: 1.7 !important;
-  margin-bottom: 2.5rem !important;
-  opacity: 0.95;
-  font-weight: 400;
-}
-
-.featured-btn {
-  background: white;
-  color: inherit;
-  padding: 18px 45px !important; /* Increased padding */
-  font-size: 1.2rem !important; /* Increased font size */
-  font-weight: 700 !important;
-  border-radius: 50px;
-  align-self: flex-start;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-  min-width: 200px;
-}
-
-.featured-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-
-.recipes-box .featured-btn {
-  color: #ff6b6b !important;
-}
-
-.chefs-box .featured-btn {
-  color: #4ecdc4 !important;
-}
-
-/* Mobile view for featured sections */
-@media (max-width: 991px) {
-  .featured-sections {
-    padding: 60px 25px !important;
-  }
-  
-  .featured-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 30px !important;
-  }
-  
-  .featured-box {
-    min-height: 500px !important;
-    padding: 50px 40px !important;
-  }
-  
-  .featured-content h2 {
-    font-size: 2.4rem !important;
-  }
-  
-  .featured-content p {
-    font-size: 1.2rem !important;
-  }
-  
-  .featured-btn {
-    padding: 16px 35px !important;
-    font-size: 1.1rem !important;
-    min-width: 180px;
-  }
-}
-
-/* Mobile view for featured sections - single column */
-@media (max-width: 767px) {
-  .featured-sections {
-    padding: 50px 20px !important;
-  }
-  
-  .featured-grid {
-    grid-template-columns: 1fr !important; /* Single column on mobile */
-    gap: 25px !important;
-    max-width: 100%;
-  }
-  
-  .featured-box {
-    min-height: 400px !important; /* Reduced height for mobile */
-    padding: 40px 30px !important; /* Adjusted padding */
-    width: 100% !important;
-    max-width: 100% !important;
-    border-radius: 16px !important;
-  }
-  
-  /* Increase width and reduce height for mobile */
-  .featured-box {
-    height: auto !important;
-    min-height: 380px !important;
-  }
-  
-  .featured-content h2 {
-    font-size: 2rem !important;
-    margin-bottom: 1.2rem !important;
-  }
-  
-  .featured-content p {
-    font-size: 1.1rem !important;
-    margin-bottom: 1.8rem !important;
-    line-height: 1.6;
-  }
-  
-  .featured-btn {
-    padding: 14px 30px !important;
-    font-size: 1rem !important;
-    align-self: center;
-    width: auto;
-    min-width: 160px;
-  }
-}
-
-/* Extra small mobile */
-@media (max-width: 480px) {
-  .featured-sections {
-    padding: 40px 15px !important;
-  }
-  
-  .featured-box {
-    min-height: 350px !important;
-    padding: 35px 25px !important;
-  }
-  
-  .featured-content h2 {
-    font-size: 1.8rem !important;
-  }
-  
-  .featured-content p {
-    font-size: 1rem !important;
-  }
-  
-  .featured-btn {
-    padding: 12px 25px !important;
-    font-size: 0.95rem !important;
-  }
-}
-
-/* =========================================== */
-/* OTHER RESPONSIVE BREAKPOINTS                */
-/* =========================================== */
-
-@media (min-width: 1600px) {
-  .hero-section { height: 630px; }
-  .title-line { font-size: 5.2rem; }
-  .description-line { font-size: 1.8rem; }
-  .description-subline { font-size: 1.3rem; }
-  .screen-content-inner { max-width: 80%; }
-  .gallery-image-frame { width: 160px; height: 160px; min-width: 160px; }
-  .caption-title { font-size: 1.5rem; }
-  .screen-action-btn { padding: 18px 45px; font-size: 1.2rem; }
-  
-  /* Featured sections for extra large screens */
-  .featured-sections {
-    padding: 100px 60px !important;
-  }
-  
-  .featured-grid {
-    max-width: 1600px;
-    gap: 60px !important;
-  }
-  
-  .featured-box {
-    min-height: 650px !important;
-    padding: 80px 70px !important;
-  }
-  
-  .featured-content h2 {
-    font-size: 3.2rem !important;
-  }
-  
-  .featured-content p {
-    font-size: 1.4rem !important;
-  }
-}
-
-@media (max-width: 1599px) and (min-width: 1400px) {
-  .hero-section { height: 585px; }
-  .title-line { font-size: 4.2rem; }
-  .description-line { font-size: 1.5rem; }
-  .gallery-image-frame { width: 130px; height: 130px; min-width: 130px; }
-}
-
-@media (max-width: 1399px) and (min-width: 1200px) {
-  .hero-section { height: 540px; }
-  .title-line { font-size: 3.8rem; }
-  .description-line { font-size: 1.4rem; }
-  .description-subline { font-size: 1rem; }
-  .screen-content-inner { max-width: 90%; }
-  .gallery-image-frame { width: 120px; height: 120px; min-width: 120px; }
-  .caption-title { font-size: 1.2rem; }
-  .screen-action-btn { padding: 14px 35px; font-size: 1.05rem; }
-}
-
-@media (max-width: 1199px) and (min-width: 992px) {
-  .hero-section { height: 495px; }
-  .split-screen-container { flex-direction: column !important; }
-  .video-screen, .content-screen { width: 100% !important; height: 50%; clip-path: none !important; margin: 0 !important; }
-  .title-line { font-size: 3.5rem; }
-  .description-line { font-size: 1.3rem; }
-  .content-screen .screen-content-inner { padding: 25px; flex-direction: row; align-items: center; gap: 40px; }
-  .screen-header { margin-bottom: 0; width: 30%; }
-  .screen-gallery { flex-direction: row; gap: 30px; margin: 0; flex: 1; }
-  .gallery-item { flex-direction: column; text-align: center; gap: 15px; flex: 1; }
-  .gallery-image-frame { width: 140px; height: 140px; }
-  .gallery-caption { text-align: center; }
-  .screen-action { margin-top: 0; width: 25%; }
-  .carousel-control { width: 50px; height: 50px; font-size: 1.3rem; }
-}
-
-@media (max-width: 991px) and (min-width: 768px) {
-  .hero-section { height: 450px; }
-  .split-screen-container { flex-direction: column !important; }
-  .video-screen, .content-screen { width: 100% !important; height: 50%; clip-path: none !important; margin: 0 !important; }
-  .title-line { font-size: 3rem; }
-  .description-line { font-size: 1.2rem; }
-  .content-screen .screen-content-inner { padding: 20px; flex-direction: row; align-items: center; gap: 30px; }
-  .screen-header { margin-bottom: 0; width: 30%; }
-  .screen-tags { flex-direction: column; gap: 10px; }
-  .screen-gallery { flex-direction: row; gap: 25px; margin: 0; flex: 1; }
-  .gallery-item { flex-direction: column; text-align: center; gap: 12px; flex: 1; }
-  .gallery-image-frame { width: 120px; height: 120px; }
-  .caption-title { font-size: 1.1rem; }
-  .screen-action { margin-top: 0; width: 25%; }
-  .screen-action-btn { padding: 12px 30px; font-size: 1rem; }
-  .carousel-control { width: 45px; height: 45px; font-size: 1.2rem; }
-}
-
-.categories {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.categories .section-title {
-  margin-bottom: 2.5rem;
-  font-size: 2.2rem;
-}
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 10px;
-}
-
-.category-card {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  background: white;
-  width: 100%;
-}
-
-.category-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.category-card img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-}
-
-.category-card h3 {
-  padding: 20px 15px;
-  text-align: center;
-  font-size: 1.1rem;
-  margin: 0;
-  font-weight: 600;
-  color: #333;
-}
-
-@media (max-width: 768px) {
-  .category-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 16px !important;
-  }
-  .category-card img {
-    height: 110px !important;
-  }
-  .category-card h3 {
-    font-size: 0.98rem !important;
-    padding: 12px 10px !important;
-  }
-}
 
 .recipe-switcher {
-  padding: 15px 50px 4px;
+  padding: 10px 20px 4px !important; /* Reduced top padding */
+  background: transparent;
+  border: none;
+  margin: 0 !important; /* Remove margin */
+  position: relative;
+  z-index: 1;
 }
 
 .switcher-tabs {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-bottom: 40px;
+  flex-wrap: nowrap; /* Keep all tabs in single row */
+  margin-bottom: 30px;
   background: transparent;
   border-radius: 0;
   padding: 0;
-  max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  box-shadow: none;
+  width: 100%;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  -webkit-overflow-scrolling: touch;
+}
+
+.switcher-tabs::-webkit-scrollbar {
+  height: 3px;
+}
+
+.switcher-tabs::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 2px;
 }
 
 .tab-button {
   background: transparent;
   border: none;
   border-radius: 0;
-  padding: 12px 24px;
+  padding: 10px 18px;
   font-weight: 500;
-  font-size: 20px;
+  font-size: 18px;
   color: #6c757d;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1163,11 +777,14 @@ body {
   white-space: nowrap;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
+  flex-shrink: 0; /* Prevent tabs from shrinking */
 }
 
 .tab-button:not(:last-child)::after {
-  content: ' | ';
-  color: #6c757d;
+  content: '|';
+  color: #dee2e6;
+  position: absolute;
+  right: -2px;
   font-weight: normal;
 }
 
@@ -1177,20 +794,12 @@ body {
   border-bottom: 2px solid #dee2e6;
 }
 
-.tab-button:hover::after {
-  color: #495057;
-}
-
 .tab-button.active {
   background: transparent;
   color: #000;
   border-bottom: 2px solid #000;
   box-shadow: none;
   font-weight: 600;
-}
-
-.tab-button.active::after {
-  color: #000;
 }
 
 .recipe-grid {
@@ -1362,6 +971,309 @@ body {
   color: #fc8888;
   font-size: 12px;
   min-width: 12px;
+}
+
+/* =========================================== */
+/* RECIPE SWITCHER MOBILE FIX                  */
+/* =========================================== */
+
+@media (max-width: 767px) {
+  .recipe-switcher {
+    padding: 5px 15px 4px !important; /* Further reduced padding on mobile */
+    margin-top: -5px !important; /* Pull it closer to hero section */
+  }
+  
+  .switcher-tabs {
+    margin-bottom: 20px;
+    justify-content: flex-start; /* Align tabs to left on mobile */
+  }
+  
+  .tab-button {
+    padding: 8px 14px;
+    font-size: 16px;
+  }
+  
+  .recipe-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .card-image {
+    height: 200px;
+  }
+}
+
+/* =========================================== */
+/* FEATURED SECTIONS FIXES                     */
+/* =========================================== */
+
+.featured-sections {
+  padding: 80px 40px !important;
+  background: #fafafa;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 50px !important;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+}
+
+.featured-box {
+  border-radius: 20px !important;
+  padding: 70px 60px !important;
+  min-height: 600px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important;
+  transition: all 0.4s ease;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+.featured-box:hover {
+  transform: translateY(-15px) !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.15) !important;
+}
+
+.recipes-box {
+  background: #ff6b6b url('/assets/recipe.png') center/cover no-repeat;
+  color: white;
+  background-size: cover !important;
+}
+
+.chefs-box {
+  background: #4ecdc4 url('/assets/chef.png') center/cover no-repeat;
+  color: white;
+  background-size: cover !important;
+}
+
+.featured-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 500px;
+}
+
+.featured-content h2 {
+  font-size: 3rem !important;
+  margin-bottom: 1.8rem !important;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.featured-content p {
+  font-size: 1.3rem !important;
+  line-height: 1.7 !important;
+  margin-bottom: 2.5rem !important;
+  opacity: 0.95;
+  font-weight: 400;
+}
+
+.featured-btn {
+  background: white;
+  color: inherit;
+  padding: 18px 45px !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  border-radius: 50px;
+  align-self: flex-start;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  min-width: 200px;
+}
+
+.featured-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.recipes-box .featured-btn {
+  color: #ff6b6b !important;
+}
+
+.chefs-box .featured-btn {
+  color: #4ecdc4 !important;
+}
+
+/* Mobile view for featured sections */
+@media (max-width: 991px) {
+  .featured-sections {
+    padding: 60px 25px !important;
+  }
+  
+  .featured-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 30px !important;
+  }
+  
+  .featured-box {
+    min-height: 500px !important;
+    padding: 50px 40px !important;
+  }
+  
+  .featured-content h2 {
+    font-size: 2.4rem !important;
+  }
+  
+  .featured-content p {
+    font-size: 1.2rem !important;
+  }
+  
+  .featured-btn {
+    padding: 16px 35px !important;
+    font-size: 1.1rem !important;
+    min-width: 180px;
+  }
+}
+
+/* Mobile view for featured sections - single column */
+@media (max-width: 767px) {
+  .featured-sections {
+    padding: 50px 20px !important;
+  }
+  
+  .featured-grid {
+    grid-template-columns: 1fr !important;
+    gap: 25px !important;
+    max-width: 100%;
+  }
+  
+  .featured-box {
+    min-height: 400px !important;
+    padding: 40px 30px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+  }
+  
+  .featured-box {
+    height: auto !important;
+    min-height: 380px !important;
+  }
+  
+  .featured-content h2 {
+    font-size: 2rem !important;
+    margin-bottom: 1.2rem !important;
+  }
+  
+  .featured-content p {
+    font-size: 1.1rem !important;
+    margin-bottom: 1.8rem !important;
+    line-height: 1.6;
+  }
+  
+  .featured-btn {
+    padding: 14px 30px !important;
+    font-size: 1rem !important;
+    align-self: center;
+    width: auto;
+    min-width: 160px;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 480px) {
+  .featured-sections {
+    padding: 40px 15px !important;
+  }
+  
+  .featured-box {
+    min-height: 350px !important;
+    padding: 35px 25px !important;
+  }
+  
+  .featured-content h2 {
+    font-size: 1.8rem !important;
+  }
+  
+  .featured-content p {
+    font-size: 1rem !important;
+  }
+  
+  .featured-btn {
+    padding: 12px 25px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+/* =========================================== */
+/* OTHER COMPONENTS                            */
+/* =========================================== */
+
+.categories {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.categories .section-title {
+  margin-bottom: 2.5rem;
+  font-size: 2.2rem;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+.category-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: white;
+  width: 100%;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.category-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.category-card h3 {
+  padding: 20px 15px;
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 600;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+  .category-card img {
+    height: 110px !important;
+  }
+  .category-card h3 {
+    font-size: 0.98rem !important;
+    padding: 12px 10px !important;
+  }
 }
 
 .recipe-of-the-day {
@@ -2093,6 +2005,109 @@ body {
   .video-title { font-size: 1.3rem; }
 }
 
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .hero-section {
+    height: 360px !important;
+  }
+  
+  .hero-title {
+    font-size: 1.1rem !important;
+  }
+  
+  .description-line {
+    font-size: 0.8rem !important;
+  }
+  
+  .description-subline {
+    font-size: 0.65rem !important;
+  }
+  
+  .screen-gallery {
+    gap: 0.3rem !important;
+  }
+  
+  .gallery-item {
+    gap: 0.3rem !important;
+    max-width: 48.5%;
+  }
+  
+  .gallery-image-frame {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+  }
+  
+  .caption-title {
+    font-size: 0.75rem !important;
+  }
+  
+  .caption-text {
+    font-size: 0.6rem !important;
+    height: 1.2rem;
+  }
+  
+  .screen-action-btn {
+    padding: 0.25rem 0.6rem !important;
+    font-size: 0.65rem !important;
+    max-width: 120px;
+  }
+  
+  .screen-tag {
+    font-size: 0.55rem !important;
+    padding: 0.12rem 0.25rem !important;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 360px) {
+  .hero-section {
+    height: 340px !important;
+  }
+  
+  .hero-title {
+    font-size: 1rem !important;
+  }
+  
+  .description-line {
+    font-size: 0.75rem !important;
+  }
+  
+  .description-subline {
+    font-size: 0.6rem !important;
+  }
+  
+  .gallery-item {
+    gap: 0.2rem !important;
+  }
+  
+  .gallery-image-frame {
+    width: 55px !important;
+    height: 55px !important;
+    min-width: 55px !important;
+  }
+  
+  .caption-title {
+    font-size: 0.7rem !important;
+  }
+  
+  .caption-text {
+    font-size: 0.55rem !important;
+    height: 1.1rem;
+  }
+  
+  .screen-action-btn {
+    max-width: 110px;
+    padding: 0.2rem 0.5rem !important;
+    font-size: 0.6rem !important;
+  }
+  
+  .screen-tag {
+    font-size: 0.5rem !important;
+    padding: 0.1rem 0.2rem !important;
+  }
+}
+
 @media print {
   .hero-section,
   .carousel-control,
@@ -2119,12 +2134,12 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .home-container { background: #1a1a1a; color: #ffffff; }
-  .content-screen { background: #2d2d2d; }
+  .home-container { background: #fbf9f9; color: #ffffff; }
+  .content-screen { background: #fcf8f8; }
   .caption-title,
   .caption-text { color: #ffffff; }
   .caption-text { color: #cccccc; }
-  .new-recipes { background: #2d2d2d; }
+  .new-recipes { background: #f9f7f7; }
   .section-title,
   .section-description { color: #ffffff; }
   .section-description { color: #cccccc; }
