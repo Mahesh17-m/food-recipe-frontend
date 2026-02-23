@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { Subject } from 'rxjs';
-import { takeUntil, take } from 'rxjs/operators';
+import { takeUntil, take, first } from 'rxjs/operators';
 import { FavoriteRecipesComponent } from '../favorite-recipes/favorite-recipes.component';
 import { MyRecipesComponent } from '../my-recipes/my-recipes.component';
 import { SavedRecipesComponent } from '../saved-recipes/saved-recipes.component';
@@ -91,7 +91,30 @@ export class ProfileComponent implements OnInit, OnDestroy {
   loadUserProfile(): void {
     this.isLoading = true;
     
-    // Use take(1) to only get the initial user, not subsequent updates
+    // First check localStorage for existing user data
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        this.user = parsedUser;
+        console.log('👤 User loaded from localStorage:', {
+          id: this.user?._id,
+          username: this.user?.username,
+          coverPicture: this.user?.coverPicture,
+          profilePicture: this.user?.profilePicture
+        });
+        
+        // Update stats from user object
+        this.updateStatsFromUser();
+        
+        // Load form data
+        this.loadFormData();
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
+    
+    // Then get fresh data from auth service
     this.authService.currentUser$.pipe(
       take(1),
       takeUntil(this.destroy$)
@@ -99,7 +122,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       next: (user) => {
         if (user) {
           this.user = user;
-          console.log('👤 Initial user loaded:', {
+          console.log('👤 User loaded from auth service:', {
             id: user._id,
             username: user.username,
             coverPicture: user.coverPicture,
@@ -120,9 +143,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
           // Load badges
           this.loadUserBadges();
         } else {
-          this.isLoading = false;
+          // If no user, redirect to login
           this.router.navigate(['/login']);
         }
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading user profile:', error);
@@ -143,7 +167,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.totalLikes = this.user.totalLikes || 0;
     this.totalViews = this.user.totalViews || 0;
     this.engagementRate = this.user.engagementRate || 0;
-    this.userLevel = this.userLevel || 'New Cook';
   }
 
   loadFormData(): void {
@@ -193,8 +216,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.recentRecipes = stats.recentRecipes || [];
         this.recentReviews = stats.recentReviews || [];
         
-        // Update user object with backend stats but don't trigger auth service update
-        // to prevent loops
+        // Update user object with backend stats
         if (this.user) {
           const updatedUser = {
             ...this.user,
@@ -206,19 +228,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
             totalLikes: this.totalLikes,
             totalViews: this.totalViews,
             engagementRate: this.engagementRate,
-            // Only update coverPicture if it's different
-            coverPicture: stats.coverPicture && stats.coverPicture !== this.user.coverPicture 
-              ? stats.coverPicture 
-              : this.user.coverPicture,
-            profilePicture: stats.profilePicture && stats.profilePicture !== this.user.profilePicture
-              ? stats.profilePicture
-              : this.user.profilePicture
+            coverPicture: stats.coverPicture || this.user.coverPicture,
+            profilePicture: stats.profilePicture || this.user.profilePicture
           };
           
-          // Update local user reference
+          // Update local user reference and localStorage
           this.user = updatedUser;
-          
-          // Update localStorage but skip the auth service observable update
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         }
         
@@ -236,17 +251,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
         });
         
         this.hasLoadedStats = true;
-        this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Error loading user stats:', error);
         this.hasLoadedStats = true;
-        this.isLoading = false;
       }
     });
   }
 
   loadUserBadges(): void {
+    if (!this.user) return;
+    
     this.userService.getUserBadges().pipe(
       take(1),
       takeUntil(this.destroy$)
@@ -338,6 +353,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   triggerFileInput(type: 'avatar' | 'cover'): void {
     const fileInput = document.getElementById(`${type}Input`) as HTMLInputElement;
     if (fileInput) {
+      fileInput.value = ''; // Clear previous selection
       fileInput.click();
     }
   }
@@ -350,111 +366,98 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.handleFileUpload(event, 'cover');
   }
 
-  private handleFileUpload(event: Event, type: 'avatar' | 'cover'): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        alert('Only JPEG, PNG, GIF or WEBP images are allowed');
-        return;
-      }
-      
-      const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
-      if (file.size > maxSize) {
-        alert(`Image must be less than ${maxSize / (1024 * 1024)}MB`);
-        return;
-      }
-      
-      this.isUpdating = true;
-      
-      if (type === 'avatar') {
-        this.authService.uploadProfilePicture(file)
-          .pipe(take(1), takeUntil(this.destroy$))
-          .subscribe({
-            next: (response: any) => {
-              console.log('✅ Profile picture updated');
-              this.isUpdating = false;
-              alert('Profile picture updated successfully!');
-              input.value = '';
-              // Manually update local user without triggering stats reload
-              if (this.user && response.profilePicture) {
-                this.user.profilePicture = response.profilePicture;
-                localStorage.setItem('currentUser', JSON.stringify(this.user));
-              }
-            },
-            error: (error: any) => {
-              this.isUpdating = false;
-              console.error('Upload error:', error);
-              alert('Failed to upload profile picture. Please try again.');
-              input.value = '';
-            }
-          });
-      } else {
-        this.userService.uploadCoverPicture(file)
-          .pipe(take(1), takeUntil(this.destroy$))
-          .subscribe({
-            next: (response: any) => {
-              console.log('✅ Cover picture updated');
-              this.isUpdating = false;
-              alert('Cover picture updated successfully!');
-              input.value = '';
-              // Manually update local user without triggering stats reload
-              if (this.user && response.coverPicture) {
-                this.user.coverPicture = response.coverPicture;
-                localStorage.setItem('currentUser', JSON.stringify(this.user));
-              }
-            },
-            error: (error: any) => {
-              this.isUpdating = false;
-              console.error('Cover upload error:', error);
-              alert('Failed to upload cover picture. Please try again.');
-              input.value = '';
-            }
-          });
-      }
+ private handleFileUpload(event: Event, type: 'avatar' | 'cover'): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+    
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      alert('Only JPEG, JPG, PNG, GIF or WEBP images are allowed');
+      input.value = '';
+      return;
     }
-  }
-
-  updateProfile(): void {
-    if (this.profileForm.invalid) {
-      this.markFormGroupTouched(this.profileForm);
+    
+    const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`Image must be less than ${maxSize / (1024 * 1024)}MB`);
+      input.value = '';
       return;
     }
     
     this.isUpdating = true;
     
-    const formValue = this.profileForm.value;
-    
-    formValue.interests = (formValue.interests || []).filter((item: string) => item && item.trim());
-    formValue.specialties = (formValue.specialties || []).filter((item: string) => item && item.trim());
-    
-    if (formValue.socialMedia) {
-      Object.keys(formValue.socialMedia).forEach(key => {
-        if (!formValue.socialMedia[key] || formValue.socialMedia[key].trim() === '') {
-          delete formValue.socialMedia[key];
-        }
-      });
+    if (type === 'avatar') {
+      this.userService.uploadProfilePicture(file)
+        .pipe(take(1), takeUntil(this.destroy$))
+        .subscribe({
+          next: (response: any) => {
+            console.log('✅ Profile picture updated', response);
+            this.isUpdating = false;
+            
+            if (response?.success) {
+              alert('Profile picture updated successfully!');
+              
+              // Update local user
+              if (this.user && response.profilePicture) {
+                this.user.profilePicture = response.profilePicture;
+                localStorage.setItem('currentUser', JSON.stringify(this.user));
+                
+                // Force a small delay to ensure localStorage is updated
+                setTimeout(() => {
+                  window.location.reload();
+                }, 500);
+              }
+            } else {
+              alert(response?.message || 'Failed to update profile picture');
+            }
+            
+            input.value = '';
+          },
+          error: (error: any) => {
+            this.isUpdating = false;
+            console.error('Upload error:', error);
+            alert(error.message || 'Failed to upload profile picture. Please try again.');
+            input.value = '';
+          }
+        });
+    } else {
+      this.userService.uploadCoverPicture(file)
+        .pipe(take(1), takeUntil(this.destroy$))
+        .subscribe({
+          next: (response: any) => {
+            console.log('✅ Cover picture updated', response);
+            this.isUpdating = false;
+            
+            if (response?.success) {
+              alert('Cover picture updated successfully!');
+              
+              // Update local user
+              if (this.user && response.coverPicture) {
+                this.user.coverPicture = response.coverPicture;
+                localStorage.setItem('currentUser', JSON.stringify(this.user));
+                
+                // Force a small delay to ensure localStorage is updated
+                setTimeout(() => {
+                  window.location.reload();
+                }, 500);
+              }
+            } else {
+              alert(response?.message || 'Failed to update cover picture');
+            }
+            
+            input.value = '';
+          },
+          error: (error: any) => {
+            this.isUpdating = false;
+            console.error('Cover upload error:', error);
+            alert(error.message || 'Failed to upload cover picture. Please try again.');
+            input.value = '';
+          }
+        });
     }
-    
-    this.userService.updateProfileSettings(formValue)
-      .pipe(take(1), takeUntil(this.destroy$))
-      .subscribe({
-        next: (updatedUser: User) => {
-          this.user = updatedUser;
-          this.isEditing = false;
-          this.isUpdating = false;
-          alert('Profile updated successfully!');
-        },
-        error: (error: any) => {
-          console.error('Error updating profile:', error);
-          this.isUpdating = false;
-          alert('Failed to update profile. Please try again.');
-        }
-      });
   }
-
+}
   private markFormGroupTouched(formGroup: FormGroup | FormArray) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -464,13 +467,62 @@ export class ProfileComponent implements OnInit, OnDestroy {
       }
     });
   }
-
+updateProfile(): void {
+  if (this.profileForm.invalid) {
+    this.markFormGroupTouched(this.profileForm);
+    return;
+  }
+  
+  this.isUpdating = true;
+  
+  const formValue = this.profileForm.value;
+  
+  formValue.interests = (formValue.interests || []).filter((item: string) => item && item.trim());
+  formValue.specialties = (formValue.specialties || []).filter((item: string) => item && item.trim());
+  
+  if (formValue.socialMedia) {
+    Object.keys(formValue.socialMedia).forEach(key => {
+      if (!formValue.socialMedia[key] || formValue.socialMedia[key].trim() === '') {
+        delete formValue.socialMedia[key];
+      }
+    });
+  }
+  
+  this.userService.updateProfileSettings(formValue)
+    .pipe(take(1), takeUntil(this.destroy$))
+    .subscribe({
+      next: (updatedUser: User) => {
+        this.user = updatedUser;
+        this.isEditing = false;
+        this.isUpdating = false;
+        
+        // Update localStorage
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        
+        alert('Profile updated successfully!');
+        
+        // Reload stats to get fresh data
+        this.hasLoadedStats = false;
+        this.loadUserStats();
+        
+        // Force a small delay to ensure everything is updated
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      },
+      error: (error: any) => {
+        console.error('Error updating profile:', error);
+        this.isUpdating = false;
+        alert(error.message || 'Failed to update profile. Please try again.');
+      }
+    });
+}
   getProfileImageUrl(relativePath: string | undefined): string {
     return this.authService.getFullProfileImageUrl(relativePath);
   }
 
   getCoverImageUrl(relativePath: string | undefined): string {
-    return this.authService.getFullProfileImageUrl(relativePath);
+    return this.authService.getFullCoverImageUrl(relativePath);
   }
 
   formatDate(dateString?: string): string {
