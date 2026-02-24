@@ -122,7 +122,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   getProfileImageUrl(relativePath: string | undefined): string {
     if (!relativePath) {
-      return 'assets/images/default-avatar.png';
+      return 'assets/default-avatar.png';
     }
     
     // Use auth service method for consistency
@@ -131,7 +131,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   handleImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
-    imgElement.src = 'assets/user.png';
+    imgElement.src = 'assets/default-avatar.png';
   }
 
   toggleMenu(): void {

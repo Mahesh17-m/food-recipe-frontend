@@ -37,6 +37,9 @@ export class UserService {
   getUserProfile(): Observable<User> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -51,6 +54,9 @@ export class UserService {
   getUserById(userId: string): Observable<User> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -66,6 +72,9 @@ export class UserService {
   getAuthorProfile(userId: string): Observable<any> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -106,6 +115,9 @@ export class UserService {
   toggleFollow(userId: string): Observable<any> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -141,6 +153,9 @@ export class UserService {
     
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -175,6 +190,9 @@ export class UserService {
     
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -205,6 +223,9 @@ export class UserService {
   getSavedRecipes(userId?: any): Observable<Recipe[]> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -232,6 +253,9 @@ export class UserService {
   getFavoriteRecipes(userId?: any): Observable<Recipe[]> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -260,6 +284,9 @@ export class UserService {
   addFavoriteRecipe(userId: any, recipeId: string): Observable<void> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -288,6 +315,9 @@ export class UserService {
   removeFavoriteRecipe(userId: any, recipeId: string): Observable<void> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -320,6 +350,10 @@ export class UserService {
     
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          console.warn('No token available for stats, returning default');
+          return of(this.getDefaultStats());
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -387,6 +421,9 @@ export class UserService {
     
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -400,6 +437,9 @@ export class UserService {
   addBadge(badgeData: { name: string; icon?: string; description?: string }): Observable<any> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -411,144 +451,159 @@ export class UserService {
     );
   }
 
- // Upload cover picture - FIXED
-uploadCoverPicture(file: File): Observable<any> {
-  return this.authService.getValidToken().pipe(
-    switchMap(token => {
-      const formData = new FormData();
-      // Use 'coverPicture' as field name to match backend middleware
-      formData.append('coverPicture', file, file.name);
+  // Upload cover picture - FIXED field name to match middleware
+  uploadCoverPicture(file: File): Observable<any> {
+    return this.authService.getValidToken().pipe(
+      switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available, please login again', code: 'NO_TOKEN' }));
+        }
+        const formData = new FormData();
+        // The middleware expects 'coverPicture' as field name
+        formData.append('coverPicture', file, file.name);
 
-      const headers = new HttpHeaders({
-        'Authorization': `Bearer ${token}`
-        // Don't set Content-Type - let browser set it with boundary
-      });
+        const headers = new HttpHeaders({
+          'Authorization': `Bearer ${token}`
+          // Don't set Content-Type - let browser set it with boundary
+        });
 
-      console.log('📤 Uploading cover picture to:', `${this.apiUrl}/profile/cover`);
-      console.log('📄 File details:', {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      });
+        console.log('📤 Uploading cover picture to:', `${this.apiUrl}/profile/cover`);
+        console.log('📄 File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          fieldName: 'coverPicture'
+        });
 
-      return this.http.post<any>(`${this.apiUrl}/profile/cover`, formData, { 
-        headers,
-        reportProgress: true,
-        observe: 'events'
-      }).pipe(
-        tap(event => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const progress = Math.round(100 * event.loaded / (event.total || 1));
-            console.log(`📊 Upload progress: ${progress}%`);
-          }
-        }),
-        filter(event => event.type === HttpEventType.Response),
-        map(event => (event as HttpResponse<any>).body),
-        tap(response => {
-          console.log('✅ Cover upload response:', response);
-          if (response?.success && response.coverPicture) {
-            // Update user in local storage
-            const currentUser = this.authService.currentUserValue;
-            if (currentUser) {
-              const updatedUser = {
-                ...currentUser,
-                coverPicture: response.coverPicture
-              };
-              localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-              this.authService.updateUserState(updatedUser);
+        return this.http.post<any>(`${this.apiUrl}/profile/cover`, formData, { 
+          headers,
+          reportProgress: true,
+          observe: 'events'
+        }).pipe(
+          tap(event => {
+            if (event.type === HttpEventType.UploadProgress) {
+              const progress = Math.round(100 * event.loaded / (event.total || 1));
+              console.log(`📊 Upload progress: ${progress}%`);
             }
-          }
-        }),
-        catchError(error => {
-          console.error('❌ Cover upload failed:', error);
-          let errorMessage = 'Upload failed';
-          if (error.error?.message) {
-            errorMessage = error.error.message;
-          } else if (error.status === 413) {
-            errorMessage = 'File too large. Maximum size is 10MB';
-          } else if (error.status === 415) {
-            errorMessage = 'Unsupported file type';
-          }
-          return throwError(() => ({
-            message: errorMessage,
-            code: error.error?.code || 'UPLOAD_ERROR'
-          }));
-        })
-      );
-    })
-  );
-}
-
-// Upload profile picture - FIXED
-uploadProfilePicture(file: File): Observable<any> {
-  return this.authService.getValidToken().pipe(
-    switchMap(token => {
-      const formData = new FormData();
-      // Use 'profilePicture' as field name to match backend middleware
-      formData.append('profilePicture', file, file.name);
-
-      const headers = new HttpHeaders({
-        'Authorization': `Bearer ${token}`
-      });
-
-      console.log('📤 Uploading profile picture to:', `${this.apiUrl}/profile/profile-picture`);
-      console.log('📄 File details:', {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      });
-
-      return this.http.post<any>(`${this.apiUrl}/profile/profile-picture`, formData, { 
-        headers,
-        reportProgress: true,
-        observe: 'events'
-      }).pipe(
-        tap(event => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const progress = Math.round(100 * event.loaded / (event.total || 1));
-            console.log(`📊 Upload progress: ${progress}%`);
-          }
-        }),
-        filter(event => event.type === HttpEventType.Response),
-        map(event => (event as HttpResponse<any>).body),
-        tap(response => {
-          console.log('✅ Profile picture upload response:', response);
-          if (response?.success && response.profilePicture) {
-            // Update user in local storage
-            const currentUser = this.authService.currentUserValue;
-            if (currentUser) {
-              const updatedUser = {
-                ...currentUser,
-                profilePicture: response.profilePicture
-              };
-              localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-              this.authService.updateUserState(updatedUser);
+          }),
+          filter(event => event.type === HttpEventType.Response),
+          map(event => (event as HttpResponse<any>).body),
+          tap(response => {
+            console.log('✅ Cover upload response:', response);
+            if (response?.success && response.coverPicture) {
+              // Update user in local storage
+              const currentUser = this.authService.currentUserValue;
+              if (currentUser) {
+                const updatedUser = {
+                  ...currentUser,
+                  coverPicture: response.coverPicture
+                };
+                localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                this.authService.updateUserState(updatedUser);
+              }
             }
-          }
-        }),
-        catchError(error => {
-          console.error('❌ Profile picture upload failed:', error);
-          let errorMessage = 'Upload failed';
-          if (error.error?.message) {
-            errorMessage = error.error.message;
-          } else if (error.status === 413) {
-            errorMessage = 'File too large. Maximum size is 5MB';
-          } else if (error.status === 415) {
-            errorMessage = 'Unsupported file type';
-          }
-          return throwError(() => ({
-            message: errorMessage,
-            code: error.error?.code || 'UPLOAD_ERROR'
-          }));
-        })
-      );
-    })
-  );
-}
+          }),
+          catchError(error => {
+            console.error('❌ Cover upload failed:', error);
+            let errorMessage = 'Upload failed';
+            if (error.error?.message) {
+              errorMessage = error.error.message;
+            } else if (error.status === 401) {
+              errorMessage = 'Authentication failed. Please login again.';
+            } else if (error.status === 413) {
+              errorMessage = 'File too large. Maximum size is 10MB';
+            } else if (error.status === 415) {
+              errorMessage = 'Unsupported file type';
+            }
+            return throwError(() => ({
+              message: errorMessage,
+              code: error.error?.code || 'UPLOAD_ERROR'
+            }));
+          })
+        );
+      })
+    );
+  }
+
+  // Upload profile picture - FIXED field name to match middleware
+  uploadProfilePicture(file: File): Observable<any> {
+    return this.authService.getValidToken().pipe(
+      switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available, please login again', code: 'NO_TOKEN' }));
+        }
+        const formData = new FormData();
+        // The middleware expects 'profilePicture' as field name
+        formData.append('profilePicture', file, file.name);
+
+        const headers = new HttpHeaders({
+          'Authorization': `Bearer ${token}`
+        });
+
+        console.log('📤 Uploading profile picture to:', `${this.apiUrl}/profile/profile-picture`);
+        console.log('📄 File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          fieldName: 'profilePicture'
+        });
+
+        return this.http.post<any>(`${this.apiUrl}/profile/profile-picture`, formData, { 
+          headers,
+          reportProgress: true,
+          observe: 'events'
+        }).pipe(
+          tap(event => {
+            if (event.type === HttpEventType.UploadProgress) {
+              const progress = Math.round(100 * event.loaded / (event.total || 1));
+              console.log(`📊 Upload progress: ${progress}%`);
+            }
+          }),
+          filter(event => event.type === HttpEventType.Response),
+          map(event => (event as HttpResponse<any>).body),
+          tap(response => {
+            console.log('✅ Profile picture upload response:', response);
+            if (response?.success && response.profilePicture) {
+              // Update user in local storage
+              const currentUser = this.authService.currentUserValue;
+              if (currentUser) {
+                const updatedUser = {
+                  ...currentUser,
+                  profilePicture: response.profilePicture
+                };
+                localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                this.authService.updateUserState(updatedUser);
+              }
+            }
+          }),
+          catchError(error => {
+            console.error('❌ Profile picture upload failed:', error);
+            let errorMessage = 'Upload failed';
+            if (error.error?.message) {
+              errorMessage = error.error.message;
+            } else if (error.status === 401) {
+              errorMessage = 'Authentication failed. Please login again.';
+            } else if (error.status === 413) {
+              errorMessage = 'File too large. Maximum size is 5MB';
+            } else if (error.status === 415) {
+              errorMessage = 'Unsupported file type';
+            }
+            return throwError(() => ({
+              message: errorMessage,
+              code: error.error?.code || 'UPLOAD_ERROR'
+            }));
+          })
+        );
+      })
+    );
+  }
 
   updateProfileSettings(settings: any): Observable<User> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -567,6 +622,9 @@ uploadProfilePicture(file: File): Observable<any> {
   addSavedRecipe(userId: any, recipeId: string): Observable<void> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -595,6 +653,9 @@ uploadProfilePicture(file: File): Observable<any> {
   removeSavedRecipe(userId: any, recipeId: string): Observable<void> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -620,15 +681,28 @@ uploadProfilePicture(file: File): Observable<any> {
   }
 
   getUserRecipes(userId: string): Observable<Recipe[]> {
-    return this.http.get<Recipe[]>(`${this.apiUrl}/profile/${userId}/recipes`).pipe(
-      map(recipes => recipes.map(recipe => this.formatRecipeImageUrl(recipe))),
-      catchError(this.handleError)
+    return this.authService.getValidToken().pipe(
+      switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
+        const headers = new HttpHeaders({
+          'Authorization': `Bearer ${token}`
+        });
+        return this.http.get<Recipe[]>(`${this.apiUrl}/profile/${userId}/recipes`, { headers }).pipe(
+          map(recipes => recipes.map(recipe => this.formatRecipeImageUrl(recipe))),
+          catchError(this.handleError)
+        );
+      })
     );
   }
 
   getUserActivity(): Observable<any[]> {
     return this.authService.getValidToken().pipe(
       switchMap(token => {
+        if (!token) {
+          return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+        }
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });
@@ -649,6 +723,14 @@ uploadProfilePicture(file: File): Observable<any> {
       })
     );
   }
+  getValidToken(): Observable<string> {
+  return this.authService.getValidToken().pipe(
+    catchError(error => {
+      console.error('Token error:', error);
+      return throwError(() => error);
+    })
+  );
+}
 
   // ============ HELPER METHODS ============
   private formatUserImageUrls(user: User): User {
@@ -670,12 +752,26 @@ uploadProfilePicture(file: File): Observable<any> {
   private handleError(error: any): Observable<never> {
     console.error('User service error:', error);
     
+    // Check if this is an extension context invalidated error
+    if (error.message && error.message.includes('Extension context invalidated')) {
+      console.warn('Extension context invalidated - this is normal during development with hot reload');
+      // Return a more graceful error
+      return throwError(() => ({
+        message: 'Development environment reload detected',
+        code: 'DEV_RELOAD',
+        status: 0
+      }));
+    }
+    
     let errorMessage = 'An error occurred';
     let errorCode = 'UNKNOWN_ERROR';
     
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       errorMessage = error.error.message;
+    } else if (error.status === 0) {
+      errorMessage = 'Network error. Please check your connection.';
+      errorCode = 'NETWORK_ERROR';
     } else if (error.status === 404) {
       errorMessage = 'API endpoint not found';
       errorCode = 'ENDPOINT_NOT_FOUND';

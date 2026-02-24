@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { Subject } from 'rxjs';
-import { takeUntil, take, first } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 import { FavoriteRecipesComponent } from '../favorite-recipes/favorite-recipes.component';
 import { MyRecipesComponent } from '../my-recipes/my-recipes.component';
 import { SavedRecipesComponent } from '../saved-recipes/saved-recipes.component';
@@ -32,6 +32,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   isLoading = true;
   isEditing = false;
   isUpdating = false;
+  isUploadingAvatar = false;
+  isUploadingCover = false;
   activeTab = 'profile';
   
   // Stats
@@ -54,6 +56,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
   profileForm!: FormGroup;
   private destroy$ = new Subject<void>();
   private hasLoadedStats = false;
+
+  // Default image paths
+  defaultAvatar = '\assets\default-avatar.png';
+  defaultCover = '\assets\default-cover.jpg';
 
   constructor(
     private authService: AuthService,
@@ -366,98 +372,115 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.handleFileUpload(event, 'cover');
   }
 
- private handleFileUpload(event: Event, type: 'avatar' | 'cover'): void {
-  const input = event.target as HTMLInputElement;
-  if (input.files && input.files.length > 0) {
-    const file = input.files[0];
-    
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      alert('Only JPEG, JPG, PNG, GIF or WEBP images are allowed');
-      input.value = '';
-      return;
-    }
-    
-    const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert(`Image must be less than ${maxSize / (1024 * 1024)}MB`);
-      input.value = '';
-      return;
-    }
-    
-    this.isUpdating = true;
-    
-    if (type === 'avatar') {
-      this.userService.uploadProfilePicture(file)
-        .pipe(take(1), takeUntil(this.destroy$))
-        .subscribe({
-          next: (response: any) => {
-            console.log('✅ Profile picture updated', response);
-            this.isUpdating = false;
-            
-            if (response?.success) {
-              alert('Profile picture updated successfully!');
+  private handleFileUpload(event: Event, type: 'avatar' | 'cover'): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert('Only JPEG, JPG, PNG, GIF or WEBP images are allowed');
+        input.value = '';
+        return;
+      }
+      
+      const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(`Image must be less than ${maxSize / (1024 * 1024)}MB`);
+        input.value = '';
+        return;
+      }
+      
+      if (type === 'avatar') {
+        this.isUploadingAvatar = true;
+      } else {
+        this.isUploadingCover = true;
+      }
+      
+      if (type === 'avatar') {
+        this.userService.uploadProfilePicture(file)
+          .pipe(take(1), takeUntil(this.destroy$))
+          .subscribe({
+            next: (response: any) => {
+              console.log('✅ Profile picture updated', response);
+              this.isUploadingAvatar = false;
               
-              // Update local user
-              if (this.user && response.profilePicture) {
-                this.user.profilePicture = response.profilePicture;
-                localStorage.setItem('currentUser', JSON.stringify(this.user));
+              if (response?.success && response.profilePicture) {
+                // Update local user
+                if (this.user) {
+                  this.user.profilePicture = response.profilePicture;
+                  localStorage.setItem('currentUser', JSON.stringify(this.user));
+                }
+                alert('Profile picture updated successfully!');
                 
                 // Force a small delay to ensure localStorage is updated
                 setTimeout(() => {
                   window.location.reload();
                 }, 500);
+              } else {
+                alert(response?.message || 'Failed to update profile picture');
               }
-            } else {
-              alert(response?.message || 'Failed to update profile picture');
-            }
-            
-            input.value = '';
-          },
-          error: (error: any) => {
-            this.isUpdating = false;
-            console.error('Upload error:', error);
-            alert(error.message || 'Failed to upload profile picture. Please try again.');
-            input.value = '';
-          }
-        });
-    } else {
-      this.userService.uploadCoverPicture(file)
-        .pipe(take(1), takeUntil(this.destroy$))
-        .subscribe({
-          next: (response: any) => {
-            console.log('✅ Cover picture updated', response);
-            this.isUpdating = false;
-            
-            if (response?.success) {
-              alert('Cover picture updated successfully!');
               
-              // Update local user
-              if (this.user && response.coverPicture) {
-                this.user.coverPicture = response.coverPicture;
-                localStorage.setItem('currentUser', JSON.stringify(this.user));
+              input.value = '';
+            },
+            error: (error: any) => {
+              this.isUploadingAvatar = false;
+              console.error('Upload error:', error);
+              
+              if (error.code === 'UNAUTHORIZED' || error.status === 401) {
+                alert('Your session has expired. Please login again.');
+                this.authService.logout();
+                this.router.navigate(['/login']);
+              } else {
+                alert(error.message || 'Failed to upload profile picture. Please try again.');
+              }
+              input.value = '';
+            }
+          });
+      } else {
+        this.userService.uploadCoverPicture(file)
+          .pipe(take(1), takeUntil(this.destroy$))
+          .subscribe({
+            next: (response: any) => {
+              console.log('✅ Cover picture updated', response);
+              this.isUploadingCover = false;
+              
+              if (response?.success && response.coverPicture) {
+                // Update local user
+                if (this.user) {
+                  this.user.coverPicture = response.coverPicture;
+                  localStorage.setItem('currentUser', JSON.stringify(this.user));
+                }
+                alert('Cover picture updated successfully!');
                 
                 // Force a small delay to ensure localStorage is updated
                 setTimeout(() => {
                   window.location.reload();
                 }, 500);
+              } else {
+                alert(response?.message || 'Failed to update cover picture');
               }
-            } else {
-              alert(response?.message || 'Failed to update cover picture');
+              
+              input.value = '';
+            },
+            error: (error: any) => {
+              this.isUploadingCover = false;
+              console.error('Cover upload error:', error);
+              
+              if (error.code === 'UNAUTHORIZED' || error.status === 401) {
+                alert('Your session has expired. Please login again.');
+                this.authService.logout();
+                this.router.navigate(['/login']);
+              } else {
+                alert(error.message || 'Failed to upload cover picture. Please try again.');
+              }
+              input.value = '';
             }
-            
-            input.value = '';
-          },
-          error: (error: any) => {
-            this.isUpdating = false;
-            console.error('Cover upload error:', error);
-            alert(error.message || 'Failed to upload cover picture. Please try again.');
-            input.value = '';
-          }
-        });
+          });
+      }
     }
   }
-}
+
   private markFormGroupTouched(formGroup: FormGroup | FormArray) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -467,62 +490,73 @@ export class ProfileComponent implements OnInit, OnDestroy {
       }
     });
   }
-updateProfile(): void {
-  if (this.profileForm.invalid) {
-    this.markFormGroupTouched(this.profileForm);
-    return;
+
+  updateProfile(): void {
+    if (this.profileForm.invalid) {
+      this.markFormGroupTouched(this.profileForm);
+      return;
+    }
+    
+    this.isUpdating = true;
+    
+    const formValue = this.profileForm.value;
+    
+    formValue.interests = (formValue.interests || []).filter((item: string) => item && item.trim());
+    formValue.specialties = (formValue.specialties || []).filter((item: string) => item && item.trim());
+    
+    if (formValue.socialMedia) {
+      Object.keys(formValue.socialMedia).forEach(key => {
+        if (!formValue.socialMedia[key] || formValue.socialMedia[key].trim() === '') {
+          delete formValue.socialMedia[key];
+        }
+      });
+    }
+    
+    this.userService.updateProfileSettings(formValue)
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedUser: User) => {
+          this.user = updatedUser;
+          this.isEditing = false;
+          this.isUpdating = false;
+          
+          // Update localStorage
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          
+          alert('Profile updated successfully!');
+          
+          // Reload stats to get fresh data
+          this.hasLoadedStats = false;
+          this.loadUserStats();
+          
+          // Force a small delay to ensure everything is updated
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        },
+        error: (error: any) => {
+          console.error('Error updating profile:', error);
+          this.isUpdating = false;
+          
+          if (error.code === 'UNAUTHORIZED' || error.status === 401) {
+            alert('Your session has expired. Please login again.');
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          } else {
+            alert(error.message || 'Failed to update profile. Please try again.');
+          }
+        }
+      });
   }
-  
-  this.isUpdating = true;
-  
-  const formValue = this.profileForm.value;
-  
-  formValue.interests = (formValue.interests || []).filter((item: string) => item && item.trim());
-  formValue.specialties = (formValue.specialties || []).filter((item: string) => item && item.trim());
-  
-  if (formValue.socialMedia) {
-    Object.keys(formValue.socialMedia).forEach(key => {
-      if (!formValue.socialMedia[key] || formValue.socialMedia[key].trim() === '') {
-        delete formValue.socialMedia[key];
-      }
-    });
-  }
-  
-  this.userService.updateProfileSettings(formValue)
-    .pipe(take(1), takeUntil(this.destroy$))
-    .subscribe({
-      next: (updatedUser: User) => {
-        this.user = updatedUser;
-        this.isEditing = false;
-        this.isUpdating = false;
-        
-        // Update localStorage
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-        
-        alert('Profile updated successfully!');
-        
-        // Reload stats to get fresh data
-        this.hasLoadedStats = false;
-        this.loadUserStats();
-        
-        // Force a small delay to ensure everything is updated
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      },
-      error: (error: any) => {
-        console.error('Error updating profile:', error);
-        this.isUpdating = false;
-        alert(error.message || 'Failed to update profile. Please try again.');
-      }
-    });
-}
+
   getProfileImageUrl(relativePath: string | undefined): string {
-    return this.authService.getFullProfileImageUrl(relativePath);
+    const url = this.authService.getFullProfileImageUrl(relativePath);
+    return url || this.defaultAvatar;
   }
 
   getCoverImageUrl(relativePath: string | undefined): string {
-    return this.authService.getFullCoverImageUrl(relativePath);
+    const url = this.authService.getFullCoverImageUrl(relativePath);
+    return url || this.defaultCover;
   }
 
   formatDate(dateString?: string): string {

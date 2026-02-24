@@ -99,22 +99,28 @@ export class HomeComponent implements OnInit, OnDestroy {
   loadUserPreferences(): void {
     if (this.currentUser) {
       // Load saved recipes
-      this.userService.getSavedRecipes(this.currentUser.id).subscribe({
+      this.userService.getSavedRecipes(this.currentUser.id).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
         next: (savedRecipes: Recipe[]) => {
           this.savedRecipeIds = new Set(savedRecipes.map(recipe => recipe._id));
         },
         error: (error: any) => {
           console.error('Error loading saved recipes:', error);
+          // Don't show error to user, just keep empty sets
         }
       });
 
       // Load favorite recipes
-      this.userService.getFavoriteRecipes(this.currentUser.id).subscribe({
+      this.userService.getFavoriteRecipes(this.currentUser.id).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
         next: (favoriteRecipes: Recipe[]) => {
           this.favoriteRecipeIds = new Set(favoriteRecipes.map(recipe => recipe._id));
         },
         error: (error: any) => {
           console.error('Error loading favorite recipes:', error);
+          // Don't show error to user, just keep empty sets
         }
       });
     }
@@ -179,7 +185,13 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
         this.forceUpdate();
       },
-      error: (error) => console.error('Error toggling favorite:', error)
+      error: (error) => {
+        console.error('Error toggling favorite:', error);
+        if (error.status === 401) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+      }
     });
   }
 
@@ -207,7 +219,13 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
         this.forceUpdate();
       },
-      error: (error) => console.error('Error toggling save:', error)
+      error: (error) => {
+        console.error('Error toggling save:', error);
+        if (error.status === 401) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+      }
     });
   }
 
@@ -283,7 +301,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadAllRecipes(): void {
     this.isLoading = true;
-    this.recipeService.getRecipes(1, 50).subscribe({
+    this.recipeService.getRecipes(1, 50).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (response: any) => {
         // Extract recipes from response
         this.allRecipes = response.recipes || [];

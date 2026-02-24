@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, tap, switchMap, distinctUntilChanged } from 'rxjs/operators';
+import { catchError, map, tap, switchMap, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment.prod';
@@ -10,8 +10,7 @@ import {
   AuthResponse, 
   PasswordResetResponse, 
   TokenVerificationResponse,
-  AuthMethodResponse,
-  OAuthCallbackData 
+  AuthMethodResponse
 } from '../models/recipe.model';
 
 interface DecodedToken {
@@ -30,8 +29,17 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable().pipe(
     distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
   );
+  
+  private tokenSubject = new BehaviorSubject<string | null>(null);
+  public token$ = this.tokenSubject.asObservable();
+  
   private tokenRefreshInProgress = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
+  // Default image paths
+  private defaultAvatar = 'assets/default-avatar.png';
+  private defaultCover = 'assets/default-cover.jpg';
+  private defaultRecipePlaceholder = 'assets/recipe-placeholder.jpg';
 
   constructor(private http: HttpClient, private router: Router) {
     this.loadStoredUser();
@@ -47,61 +55,26 @@ export class AuthService {
     
     if (storedUser && token) {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        
+        // Check if token is expired
         if (this.isTokenExpired(token)) {
-          console.log('Token expired, clearing storage');
-          this.clearStorage();
+          console.log('Token expired, attempting refresh...');
+          // Try to refresh token
+          this.refreshToken().subscribe({
+            next: (newToken) => {
+              console.log('Token refreshed successfully');
+              this.initializeUserFromStorage(storedUser);
+            },
+            error: () => {
+              console.log('Token refresh failed, clearing storage');
+              this.clearStorage();
+            }
+          });
           return;
         }
         
-        const user: User = {
-          _id: parsedUser._id || parsedUser.id || '',
-          username: parsedUser.username || '',
-          email: parsedUser.email || '',
-          name: parsedUser.name || parsedUser.username || '',
-          profilePicture: this.getFullProfileImageUrl(parsedUser.profilePicture),
-          coverPicture: this.getFullCoverImageUrl(parsedUser.coverPicture),
-          bio: parsedUser.bio,
-          location: parsedUser.location,
-          website: parsedUser.website,
-          cookingStyle: parsedUser.cookingStyle,
-          socialMedia: parsedUser.socialMedia || {},
-          interests: parsedUser.interests || [],
-          specialties: parsedUser.specialties || [],
-          savedRecipesCount: parsedUser.savedRecipesCount || 0,
-          recipesCount: parsedUser.recipesCount || 0,
-          favoritesCount: parsedUser.favoritesCount || 0,
-          reviewsCount: parsedUser.reviewsCount || 0,
-          followersCount: parsedUser.followersCount || 0,
-          followingCount: parsedUser.followingCount || 0,
-          totalLikes: parsedUser.totalLikes || 0,
-          totalViews: parsedUser.totalViews || 0,
-          totalInteractions: parsedUser.totalInteractions || 0,
-          engagementRate: parsedUser.engagementRate || 0,
-          memberSince: parsedUser.memberSince,
-          lastActive: parsedUser.lastActive,
-          isVerified: parsedUser.isVerified || false,
-          isProChef: parsedUser.isProChef || false,
-          proChefInfo: parsedUser.proChefInfo,
-          privacySettings: parsedUser.privacySettings || {},
-          notificationSettings: parsedUser.notificationSettings || {},
-          favorites: parsedUser.favorites || [],
-          savedRecipes: parsedUser.savedRecipes || [],
-          followers: parsedUser.followers || [],
-          following: parsedUser.following || [],
-          badges: parsedUser.badges || [],
-          recentRecipes: parsedUser.recentRecipes || [],
-          recentReviews: parsedUser.recentReviews || [],
-          createdAt: parsedUser.createdAt,
-          updatedAt: parsedUser.updatedAt,
-          tagline: parsedUser.tagline,
-          provider: parsedUser.provider || 'local',
-          googleId: parsedUser.googleId,
-          emailVerified: parsedUser.emailVerified || false
-        };
+        this.initializeUserFromStorage(storedUser);
+        this.tokenSubject.next(token);
         
-        this.currentUserSubject.next(user);
       } catch (error) {
         console.error('Error parsing stored user:', error);
         this.clearStorage();
@@ -111,185 +84,14 @@ export class AuthService {
     }
   }
 
-  private storeTokens(token: string, refreshToken: string): void {
-    localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', refreshToken);
+  private initializeUserFromStorage(storedUser: string): void {
+    const parsedUser = JSON.parse(storedUser);
+    const user = this.formatUser(parsedUser);
+    this.currentUserSubject.next(user);
   }
 
-  private clearStorage(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
-  }
-
-  private decodeToken(token: string): DecodedToken | null {
-    try {
-      return jwtDecode<DecodedToken>(token);
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      return null;
-    }
-  }
-
-  isTokenExpired(token: string): boolean {
-    const decoded = this.decodeToken(token);
-    if (!decoded) return true;
-    return decoded.exp * 1000 < Date.now();
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
-  }
-
-  private refreshToken(): Observable<string> {
-    if (this.tokenRefreshInProgress) {
-      return this.refreshTokenSubject.pipe(
-        switchMap(token => token ? of(token) : throwError(() => new Error('Refresh failed')))
-      );
-    }
-
-    this.tokenRefreshInProgress = true;
-    this.refreshTokenSubject.next(null);
-
-    const refreshToken = this.getRefreshToken();
-    if (!refreshToken) {
-      this.logout();
-      return throwError(() => new Error('No refresh token available'));
-    }
-
-    return this.http.post<{ token: string; refreshToken: string }>(
-      `${this.apiUrl}/auth/refresh-token`,
-      { refreshToken }
-    ).pipe(
-      tap(response => {
-        this.storeTokens(response.token, response.refreshToken);
-        this.tokenRefreshInProgress = false;
-        this.refreshTokenSubject.next(response.token);
-      }),
-      map(response => response.token),
-      catchError(error => {
-        this.tokenRefreshInProgress = false;
-        this.logout();
-        return throwError(() => error);
-      })
-    );
-  }
-
-  getValidToken(): Observable<string> {
-    const token = this.getToken();
-    if (!token) {
-      return throwError(() => new Error('No token available'));
-    }
-    if (!this.isTokenExpired(token)) {
-      return of(token);
-    }
-    return this.refreshToken();
-  }
-
-  // ============ LOGIN METHOD ============
-  login(email: string, password: string): Observable<User> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { 
-      email: email.toLowerCase().trim(), 
-      password: password.trim() 
-    }).pipe(
-      tap(response => {
-        this.storeTokens(response.token, response.refreshToken);
-        
-        const completeUser: User = {
-          _id: response.user._id,
-          username: response.user.username || '',
-          email: response.user.email || '',
-          name: response.user.name || response.user.username || '',
-          profilePicture: this.getFullProfileImageUrl(response.user.profilePicture),
-          coverPicture: this.getFullCoverImageUrl(response.user.coverPicture),
-          bio: response.user.bio,
-          location: response.user.location,
-          website: response.user.website,
-          cookingStyle: response.user.cookingStyle,
-          socialMedia: response.user.socialMedia || {},
-          interests: response.user.interests || [],
-          specialties: response.user.specialties || [],
-          savedRecipesCount: response.user.savedRecipesCount || 0,
-          recipesCount: response.user.recipesCount || 0,
-          favoritesCount: response.user.favoritesCount || 0,
-          reviewsCount: response.user.reviewsCount || 0,
-          followersCount: response.user.followersCount || 0,
-          followingCount: response.user.followingCount || 0,
-          totalLikes: response.user.totalLikes || 0,
-          totalViews: response.user.totalViews || 0,
-          totalInteractions: response.user.totalInteractions || 0,
-          engagementRate: response.user.engagementRate || 0,
-          memberSince: response.user.memberSince,
-          lastActive: response.user.lastActive,
-          isVerified: response.user.isVerified || false,
-          isProChef: response.user.isProChef || false,
-          proChefInfo: response.user.proChefInfo,
-          privacySettings: response.user.privacySettings || {},
-          notificationSettings: response.user.notificationSettings || {},
-          favorites: response.user.favorites || [],
-          savedRecipes: response.user.savedRecipes || [],
-          followers: response.user.followers || [],
-          following: response.user.following || [],
-          badges: response.user.badges || [],
-          recentRecipes: response.user.recentRecipes || [],
-          recentReviews: response.user.recentReviews || [],
-          createdAt: response.user.createdAt,
-          updatedAt: response.user.updatedAt,
-          tagline: response.user.tagline,
-          provider: response.user.provider || 'local',
-          googleId: response.user.googleId,
-          emailVerified: response.user.emailVerified || false
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(completeUser));
-        this.currentUserSubject.next(completeUser);
-      }),
-      map(response => response.user),
-      catchError(this.handleError)
-    );
-  }
-
-  // ============ REGISTER METHOD ============
-  register(userData: { name: string; username: string; email: string; password: string }): Observable<User> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, {
-      name: userData.name.trim(),
-      username: userData.username.trim(),
-      email: userData.email.toLowerCase().trim(),
-      password: userData.password.trim()
-    }).pipe(
-      tap(response => {
-        this.storeTokens(response.token, response.refreshToken);
-        // Ensure profile picture is properly formatted
-        const userWithFormattedImage = {
-          ...response.user,
-          profilePicture: this.getFullProfileImageUrl(response.user.profilePicture),
-          coverPicture: this.getFullCoverImageUrl(response.user.coverPicture)
-        };
-        localStorage.setItem('currentUser', JSON.stringify(userWithFormattedImage));
-        this.currentUserSubject.next(userWithFormattedImage);
-      }),
-      map(response => response.user),
-      catchError(this.handleError)
-    );
-  }
-
-  // ============ GOOGLE OAUTH METHODS ============
-  initiateGoogleLogin(): void {
-    const redirectUri = encodeURIComponent(environment.redirectUri);
-    window.location.href = `${this.apiUrl}/auth/google?redirect_uri=${redirectUri}`;
-  }
-
-  handleOAuthCallback(token: string, refreshToken: string, userData: any): Observable<User> {
-    // Store tokens
-    this.storeTokens(token, refreshToken);
-    
-    // Parse and store user
-    const user: User = {
+  private formatUser(userData: any): User {
+    return {
       _id: userData._id || userData.id || '',
       username: userData.username || '',
       email: userData.email || '',
@@ -334,6 +136,159 @@ export class AuthService {
       googleId: userData.googleId,
       emailVerified: userData.emailVerified || false
     };
+  }
+
+  private storeTokens(token: string, refreshToken: string): void {
+    localStorage.setItem('token', token);
+    localStorage.setItem('refreshToken', refreshToken);
+    this.tokenSubject.next(token);
+  }
+
+  private clearStorage(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+    this.tokenSubject.next(null);
+    this.currentUserSubject.next(null);
+  }
+
+  private decodeToken(token: string): DecodedToken | null {
+    try {
+      return jwtDecode<DecodedToken>(token);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
+
+  isTokenExpired(token: string): boolean {
+    try {
+      const decoded = this.decodeToken(token);
+      if (!decoded) return true;
+      // Add 30 second buffer to prevent edge cases
+      return (decoded.exp * 1000) - 30000 < Date.now();
+    } catch {
+      return true;
+    }
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
+  }
+
+  // FIXED: Improved token refresh mechanism
+  private refreshToken(): Observable<string> {
+    // If a refresh is already in progress, wait for it
+    if (this.tokenRefreshInProgress) {
+      return this.refreshTokenSubject.pipe(
+        filter(token => token !== null),
+        map(token => token as string),
+        switchMap(token => of(token))
+      );
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      this.logout();
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    this.tokenRefreshInProgress = true;
+    this.refreshTokenSubject.next(null);
+
+    return this.http.post<{ token: string; refreshToken: string }>(
+      `${this.apiUrl}/auth/refresh-token`,
+      { refreshToken }
+    ).pipe(
+      tap(response => {
+        console.log('✅ Token refreshed successfully');
+        this.storeTokens(response.token, response.refreshToken);
+        this.tokenRefreshInProgress = false;
+        this.refreshTokenSubject.next(response.token);
+      }),
+      map(response => response.token),
+      catchError(error => {
+        console.error('❌ Token refresh failed:', error);
+        this.tokenRefreshInProgress = false;
+        this.logout();
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // FIXED: Improved getValidToken with better error handling
+  getValidToken(): Observable<string> {
+    const token = this.getToken();
+    
+    if (!token) {
+      console.warn('No token available');
+      return throwError(() => ({ message: 'No token available', code: 'NO_TOKEN' }));
+    }
+    
+    if (!this.isTokenExpired(token)) {
+      return of(token);
+    }
+    
+    console.log('Token expired, attempting refresh...');
+    return this.refreshToken();
+  }
+
+  // ============ LOGIN METHOD ============
+  login(email: string, password: string): Observable<User> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { 
+      email: email.toLowerCase().trim(), 
+      password: password.trim() 
+    }).pipe(
+      tap(response => {
+        console.log('✅ Login successful, storing tokens');
+        this.storeTokens(response.token, response.refreshToken);
+        
+        const user = this.formatUser(response.user);
+        
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      map(response => response.user),
+      catchError(this.handleError)
+    );
+  }
+
+  // ============ REGISTER METHOD ============
+  register(userData: { name: string; username: string; email: string; password: string }): Observable<User> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, {
+      name: userData.name.trim(),
+      username: userData.username.trim(),
+      email: userData.email.toLowerCase().trim(),
+      password: userData.password.trim()
+    }).pipe(
+      tap(response => {
+        console.log('✅ Registration successful, storing tokens');
+        this.storeTokens(response.token, response.refreshToken);
+        
+        const user = this.formatUser(response.user);
+        
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      map(response => response.user),
+      catchError(this.handleError)
+    );
+  }
+
+  // ============ GOOGLE OAUTH METHODS ============
+  initiateGoogleLogin(): void {
+    const redirectUri = encodeURIComponent(environment.redirectUri);
+    window.location.href = `${this.apiUrl}/auth/google?redirect_uri=${redirectUri}`;
+  }
+
+  handleOAuthCallback(token: string, refreshToken: string, userData: any): Observable<User> {
+    this.storeTokens(token, refreshToken);
+    
+    const user = this.formatUser(userData);
     
     localStorage.setItem('currentUser', JSON.stringify(user));
     this.currentUserSubject.next(user);
@@ -411,8 +366,9 @@ export class AuthService {
         
         return this.http.put<User>(`${this.apiUrl}/auth/profile`, profileData, { headers }).pipe(
           tap(user => {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.currentUserSubject.next(user);
+            const formattedUser = this.formatUser(user);
+            localStorage.setItem('currentUser', JSON.stringify(formattedUser));
+            this.currentUserSubject.next(formattedUser);
           }),
           catchError(this.handleError)
         );
@@ -420,85 +376,89 @@ export class AuthService {
     );
   }
 
-  // Upload Profile Picture - FIXED
+  // Upload Profile Picture - FIXED endpoint to match backend
   uploadProfilePicture(file: File): Observable<User> {
     return this.getValidToken().pipe(
       switchMap(token => {
+        console.log('🔑 Token for upload:', token ? 'Present' : 'MISSING');
+        
         const formData = new FormData();
-        // Use 'profilePicture' as field name to match backend middleware
         formData.append('profilePicture', file, file.name);
 
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
-          // DO NOT set Content-Type - let browser set it
         });
 
-        console.log('📤 Uploading profile picture to:', `${this.apiUrl}/auth/profile/picture`);
+        console.log('📤 Uploading profile picture to:', `${this.apiUrl}/profile/profile-picture`);
         console.log('📄 File details:', {
           name: file.name,
           size: file.size,
           type: file.type
         });
 
-        return this.http.post<User>(`${this.apiUrl}/auth/profile/picture`, formData, { 
+        return this.http.post<any>(`${this.apiUrl}/profile/profile-picture`, formData, { 
           headers,
           reportProgress: true
         }).pipe(
-          tap(user => {
-            console.log('✅ Profile picture upload successful:', user.profilePicture);
-            this.updateUserState(user, true);
+          tap(response => {
+            console.log('✅ Profile picture upload response:', response);
+            if (response?.success && response.user) {
+              const formattedUser = this.formatUser(response.user);
+              localStorage.setItem('currentUser', JSON.stringify(formattedUser));
+              this.currentUserSubject.next(formattedUser);
+            }
           }),
+          map(response => response.user),
           catchError(this.handleError)
         );
       })
     );
   }
 
-  // ============ IMAGE URL HANDLING FOR CLOUDINARY ============
+  // ============ IMAGE URL HANDLING ============
   getFullProfileImageUrl(relativePath: string | undefined | null): string {
-    return this.getImageUrl(relativePath, 'assets/images/default-avatar.png');
+    if (!relativePath || relativePath === 'null' || relativePath === 'undefined') {
+      return this.defaultAvatar;
+    }
+    return this.formatImageUrl(relativePath);
   }
 
   getFullCoverImageUrl(relativePath: string | undefined | null): string {
-    return this.getImageUrl(relativePath, 'assets/images/default-cover.jpg');
+    if (!relativePath || relativePath === 'null' || relativePath === 'undefined') {
+      return this.defaultCover;
+    }
+    return this.formatImageUrl(relativePath);
   }
 
   getRecipeImageUrl(relativePath: string | undefined | null): string {
-    return this.getImageUrl(relativePath, 'assets/images/recipe-placeholder.jpg');
+    if (!relativePath || relativePath === 'null' || relativePath === 'undefined') {
+      return this.defaultRecipePlaceholder;
+    }
+    return this.formatImageUrl(relativePath);
   }
 
-  private getImageUrl(relativePath: string | undefined | null, defaultImage: string): string {
-    // Handle null, undefined, or empty string
-    if (!relativePath || relativePath.trim() === '' || relativePath === 'null' || relativePath === 'undefined') {
-      return defaultImage;
-    }
+  private formatImageUrl(path: string): string {
+    // Clean the path
+    const cleanPath = path.split('?')[0].trim();
     
-    const cleanPath = relativePath.split('?')[0].trim();
-    
-    // If it's already a full URL (Cloudinary or any http URL), return as-is
+    // If it's already a full URL, return as-is
     if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
       return cleanPath;
     }
     
-    // If it's a Cloudinary URL without protocol (shouldn't happen but just in case)
+    // If it's a Cloudinary URL without protocol
     if (cleanPath.includes('cloudinary.com')) {
       return `https://${cleanPath}`;
     }
     
-    // If it's a local path (legacy), construct URL with backend
+    // If it's a local path
     if (cleanPath.startsWith('/uploads')) {
       const backendUrl = environment.apiUrl.replace('/api', '');
       return `${backendUrl}${cleanPath}`;
     }
     
-    // If it's just a filename without path
-    if (!cleanPath.includes('/')) {
-      const backendUrl = environment.apiUrl.replace('/api', '');
-      return `${backendUrl}/uploads/${cleanPath}`;
-    }
-    
     // Default fallback
-    return defaultImage;
+    return this.defaultAvatar;
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
@@ -534,65 +494,10 @@ export class AuthService {
   }
 
   // ============ USER STATE MANAGEMENT ============
-  updateUserState(updatedUser: User, skipUpdate: boolean = false): void {
-    const currentUser = this.currentUserValue;
-    
-    // Check if we actually need to update
-    if (skipUpdate && JSON.stringify(currentUser) === JSON.stringify(updatedUser)) {
-      return;
-    }
-    
-    const mergedUser: User = {
-      _id: updatedUser._id || currentUser?._id || '',
-      username: updatedUser.username || currentUser?.username || '',
-      email: updatedUser.email || currentUser?.email || '',
-      profilePicture: this.getFullProfileImageUrl(
-        updatedUser.profilePicture !== undefined ? updatedUser.profilePicture : currentUser?.profilePicture
-      ),
-      coverPicture: this.getFullCoverImageUrl(
-        updatedUser.coverPicture !== undefined ? updatedUser.coverPicture : currentUser?.coverPicture
-      ),
-      bio: updatedUser.bio !== undefined ? updatedUser.bio : currentUser?.bio,
-      location: updatedUser.location !== undefined ? updatedUser.location : currentUser?.location,
-      website: updatedUser.website !== undefined ? updatedUser.website : currentUser?.website,
-      cookingStyle: updatedUser.cookingStyle !== undefined ? updatedUser.cookingStyle : currentUser?.cookingStyle,
-      socialMedia: updatedUser.socialMedia || currentUser?.socialMedia || {},
-      interests: updatedUser.interests || currentUser?.interests || [],
-      specialties: updatedUser.specialties || currentUser?.specialties || [],
-      savedRecipesCount: updatedUser.savedRecipesCount !== undefined ? updatedUser.savedRecipesCount : currentUser?.savedRecipesCount || 0,
-      recipesCount: updatedUser.recipesCount !== undefined ? updatedUser.recipesCount : currentUser?.recipesCount || 0,
-      favoritesCount: updatedUser.favoritesCount !== undefined ? updatedUser.favoritesCount : currentUser?.favoritesCount || 0,
-      reviewsCount: updatedUser.reviewsCount !== undefined ? updatedUser.reviewsCount : currentUser?.reviewsCount || 0,
-      followersCount: updatedUser.followersCount !== undefined ? updatedUser.followersCount : currentUser?.followersCount || 0,
-      followingCount: updatedUser.followingCount !== undefined ? updatedUser.followingCount : currentUser?.followingCount || 0,
-      totalLikes: updatedUser.totalLikes !== undefined ? updatedUser.totalLikes : currentUser?.totalLikes || 0,
-      totalViews: updatedUser.totalViews !== undefined ? updatedUser.totalViews : currentUser?.totalViews || 0,
-      totalInteractions: updatedUser.totalInteractions !== undefined ? updatedUser.totalInteractions : currentUser?.totalInteractions || 0,
-      engagementRate: updatedUser.engagementRate !== undefined ? updatedUser.engagementRate : currentUser?.engagementRate || 0,
-      memberSince: updatedUser.memberSince || currentUser?.memberSince,
-      lastActive: updatedUser.lastActive || currentUser?.lastActive,
-      isVerified: updatedUser.isVerified !== undefined ? updatedUser.isVerified : currentUser?.isVerified || false,
-      isProChef: updatedUser.isProChef !== undefined ? updatedUser.isProChef : currentUser?.isProChef || false,
-      proChefInfo: updatedUser.proChefInfo || currentUser?.proChefInfo,
-      privacySettings: updatedUser.privacySettings || currentUser?.privacySettings || {},
-      notificationSettings: updatedUser.notificationSettings || currentUser?.notificationSettings || {},
-      favorites: updatedUser.favorites || currentUser?.favorites || [],
-      savedRecipes: updatedUser.savedRecipes || currentUser?.savedRecipes || [],
-      followers: updatedUser.followers || currentUser?.followers || [],
-      following: updatedUser.following || currentUser?.following || [],
-      badges: updatedUser.badges || currentUser?.badges || [],
-      recentRecipes: updatedUser.recentRecipes || currentUser?.recentRecipes || [],
-      recentReviews: updatedUser.recentReviews || currentUser?.recentReviews || [],
-      createdAt: updatedUser.createdAt || currentUser?.createdAt,
-      updatedAt: updatedUser.updatedAt || currentUser?.updatedAt,
-      tagline: updatedUser.tagline !== undefined ? updatedUser.tagline : currentUser?.tagline,
-      provider: updatedUser.provider || currentUser?.provider || 'local',
-      googleId: updatedUser.googleId || currentUser?.googleId,
-      emailVerified: updatedUser.emailVerified !== undefined ? updatedUser.emailVerified : currentUser?.emailVerified || false
-    };
-    
-    localStorage.setItem('currentUser', JSON.stringify(mergedUser));
-    this.currentUserSubject.next(mergedUser);
+  updateUserState(updatedUser: User): void {
+    const formattedUser = this.formatUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(formattedUser));
+    this.currentUserSubject.next(formattedUser);
   }
 
   // ============ AUTH STATUS METHODS ============
@@ -605,12 +510,12 @@ export class AuthService {
     const token = this.getToken();
     return !!token && !this.isTokenExpired(token);
   }
-
-  isLoggedIn(): Observable<boolean> {
-    return this.currentUser$.pipe(
-      map(user => !!user && this.isAuthenticated())
-    );
-  }
+  // ADD THIS METHOD
+isLoggedIn(): Observable<boolean> {
+  return this.currentUser$.pipe(
+    map(user => !!user && this.isAuthenticated())
+  );
+}
 
   // ============ ERROR HANDLING ============
   private handleError(error: HttpErrorResponse): Observable<never> {
@@ -632,8 +537,9 @@ export class AuthService {
           errorMessage = 'Invalid email or password';
           errorCode = 'INVALID_CREDENTIALS';
         } else {
-          errorMessage = 'Unauthorized access';
+          errorMessage = 'Unauthorized access. Please log in again.';
           errorCode = 'UNAUTHORIZED';
+          // Don't auto logout on 401 - let the component handle it
         }
       } else if (error.status === 404) {
         errorMessage = 'User not found';
