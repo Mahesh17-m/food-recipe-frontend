@@ -2176,23 +2176,7 @@ body {
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .home-container { background: #fbf9f9; color: #ffffff; }
-  .content-screen { background: #fcf8f8; }
-  .caption-title,
-  .caption-text { color: #6b1717; }
-  .caption-text { color: #601313; }
-  .new-recipes { background: #f9f7f7; }
-  .section-title,
-  .section-description { color: #2c1f1f; }
-  .section-description { color: #4c2020; }
-}
 
-@media (prefers-contrast: high) {
-  .accent-line { text-shadow: 0 0 2px currentColor; }
-  .screen-action-btn { border: 2px solid white; }
-  .carousel-control { border: 2px solid #333; }
-}
 
 ::-webkit-scrollbar {
   width: 10px;
