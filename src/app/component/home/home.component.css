@@ -1051,7 +1051,7 @@ body {
 /* =========================================== */
 
 .featured-sections {
-  padding: 80px 40px !important;
+  padding: 40px 40px !important;
   background: #fafafa;
 }
 
@@ -1093,7 +1093,7 @@ body {
 }
 
 .chefs-box {
-  background: #4ecdc4 url('/assets/chef.png') center/cover no-repeat;
+  background: #cd4e4e url('/assets/chef.png') center/cover no-repeat;
   color: white;
   background-size: cover !important;
 }
@@ -1147,7 +1147,7 @@ body {
 }
 
 .chefs-box .featured-btn {
-  color: #4ecdc4 !important;
+  color: #ac3328 !important;
 }
 
 /* Mobile view for featured sections */
@@ -1256,7 +1256,7 @@ body {
 /* =========================================== */
 
 .categories {
-  padding: 40px 20px;
+  padding: 20px 20px;
   text-align: center;
 }
 
@@ -1456,7 +1456,7 @@ body {
 }
 
 .new-recipes {
-  padding: 40px 90px;
+  padding: 20px 90px;
   background: #f8f9fa;
 }
 
@@ -1487,7 +1487,7 @@ body {
 .section-description {
   font-size: 1.2rem;
   color: #666;
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
   line-height: 1.6;
   font-weight: 400;
@@ -1612,7 +1612,7 @@ body {
   line-height: 1.3;
   font-family: 'Inter', sans-serif;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -2180,12 +2180,12 @@ body {
   .home-container { background: #fbf9f9; color: #ffffff; }
   .content-screen { background: #fcf8f8; }
   .caption-title,
-  .caption-text { color: #ffffff; }
-  .caption-text { color: #cccccc; }
+  .caption-text { color: #6b1717; }
+  .caption-text { color: #601313; }
   .new-recipes { background: #f9f7f7; }
   .section-title,
-  .section-description { color: #ffffff; }
-  .section-description { color: #cccccc; }
+  .section-description { color: #2c1f1f; }
+  .section-description { color: #4c2020; }
 }
 
 @media (prefers-contrast: high) {
