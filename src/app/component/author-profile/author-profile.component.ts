@@ -417,7 +417,7 @@ getRecipePlaceholder(recipe: any): string {
   }
 
   getCoverImageUrl(relativePath: string | undefined): string {
-    if (!relativePath) return 'assets/user.png';
+    if (!relativePath) return 'assets/default-cover.jpg';
     return this.authService.getFullProfileImageUrl(relativePath);
   }
 

@@ -32,14 +32,39 @@ export class ChefsComponent implements OnInit {
     
     this.userService.getChefs().subscribe({
       next: (response) => {
-        this.chefs = response.users || response || [];
+        console.log('Chefs component received response:', response);
+        
+        // Extract chefs array from response
+        if (response && response.users) {
+          this.chefs = response.users;
+        } else if (Array.isArray(response)) {
+          this.chefs = response;
+        } else {
+          console.warn('Unexpected response format:', response);
+          this.chefs = [];
+        }
+        
         this.isLoading = false;
         console.log('Loaded chefs:', this.chefs);
+        
+        // If no chefs found, show appropriate message
+        if (this.chefs.length === 0) {
+          console.log('No chefs found in response');
+        }
       },
       error: (error) => {
         console.error('Error loading chefs:', error);
         this.isLoading = false;
-        this.error = error.message || 'Failed to load chefs';
+        
+        // Handle different error formats
+        if (error.error?.message) {
+          this.error = error.error.message;
+        } else if (error.message) {
+          this.error = error.message;
+        } else {
+          this.error = 'Failed to load chefs';
+        }
+        
         this.chefs = [];
       }
     });
@@ -48,10 +73,11 @@ export class ChefsComponent implements OnInit {
   retryLoadChefs(): void {
     this.loadChefs();
   }
-viewChefProfile(chefId: string): void {
-  console.log('Navigating to author profile with ID:', chefId);
-  this.router.navigate(['/author', chefId]);
-}
+
+  viewChefProfile(chefId: string): void {
+    console.log('Navigating to author profile with ID:', chefId);
+    this.router.navigate(['/author', chefId]);
+  }
 
   getChefImage(profilePicture: string | undefined): string {
     if (!profilePicture) {

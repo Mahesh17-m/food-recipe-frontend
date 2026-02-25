@@ -17,22 +17,89 @@ export class UserService {
     private authService: AuthService
   ) {}
 
-  // Get all chefs
-  getChefs(): Observable<{users: Chef[]}> {
-    return this.http.get<{users: Chef[]}>(`${this.apiUrl}/profile/chefs`).pipe(
-      map(response => {
-        // Ensure profile pictures have full URLs
-        if (response.users) {
-          response.users = response.users.map(chef => ({
-            ...chef,
-            profilePicture: this.authService.getFullProfileImageUrl(chef.profilePicture)
-          }));
-        }
-        return response;
-      }),
-      catchError(this.handleError)
-    );
+  // In user.service.ts - Update the getChefs method
+
+// Get all chefs
+getChefs(): Observable<{users: Chef[]}> {
+  return this.authService.getValidToken().pipe(
+    switchMap(token => {
+      if (!token) {
+        console.warn('No token available for chefs, attempting without auth');
+        // Try without auth for public chefs list
+        return this.http.get<{users: Chef[]}>(`${this.apiUrl}/profile/chefs`).pipe(
+          map(response => this.processChefsResponse(response)),
+          catchError(error => {
+            console.error('Error fetching chefs without auth:', error);
+            return throwError(() => this.handleError(error));
+          })
+        );
+      }
+      
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+      
+      return this.http.get<{users: Chef[]}>(`${this.apiUrl}/profile/chefs`, { headers }).pipe(
+        map(response => this.processChefsResponse(response)),
+        catchError(error => {
+          console.error('Error in getChefs with auth:', error);
+          return throwError(() => this.handleError(error));
+        })
+      );
+    }),
+    catchError(error => {
+      console.error('Error in getChefs:', error);
+      // Return empty array instead of throwing to prevent UI breakage
+      return of({ users: [] });
+    })
+  );
+}
+
+// Helper method to process chefs response
+private processChefsResponse(response: any): {users: Chef[]} {
+  console.log('Raw chefs response:', response);
+  
+  // Handle different response structures
+  let chefsArray: Chef[] = [];
+  
+  if (response && response.users && Array.isArray(response.users)) {
+    // If response already has users property with array
+    chefsArray = response.users;
+  } else if (response && response.success && response.users && Array.isArray(response.users)) {
+    // If response has success and users properties
+    chefsArray = response.users;
+  } else if (Array.isArray(response)) {
+    // If response is directly an array
+    chefsArray = response;
+  } else if (response && response.data && Array.isArray(response.data)) {
+    // If response has data property
+    chefsArray = response.data;
+  } else if (response && typeof response === 'object') {
+    // Try to find an array property
+    const possibleArrayProps = ['users', 'chefs', 'data', 'items', 'results'];
+    for (const prop of possibleArrayProps) {
+      if (response[prop] && Array.isArray(response[prop])) {
+        chefsArray = response[prop];
+        break;
+      }
+    }
   }
+  
+  // Ensure profile pictures have full URLs
+  chefsArray = chefsArray
+    .filter(chef => chef && chef._id) // Remove invalid chefs
+    .map(chef => ({
+      ...chef,
+      profilePicture: this.authService.getFullProfileImageUrl(chef.profilePicture),
+      recipesCount: chef.recipesCount || 0,
+      followersCount: chef.followersCount || 0,
+      isVerified: chef.isVerified || false
+    }));
+  
+  console.log('Processed chefs array:', chefsArray);
+  
+  return { users: chefsArray };
+}
 
   getUserProfile(): Observable<User> {
     return this.authService.getValidToken().pipe(
